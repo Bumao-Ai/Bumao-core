@@ -1,12 +1,18 @@
 # Bumao Core
 
+Status: maintenance pause
+状态：维护暂停，稳定可用
+
 ![license](https://img.shields.io/badge/license-Apache--2.0-blue)
 ![python](https://img.shields.io/badge/python-3.12%2B-blue)
 ![gates](https://img.shields.io/badge/gate%20templates-13-brightgreen)
 ![runtime](https://img.shields.io/badge/runtime-stdlib%20only-informational)
 
-> **Two version spaces** — the kernel version declared in `kernel_contract.json` is `0.10`; the repository release tag is `v0.12`. They are two independent numbering spaces, not the same number.
-> **两个版本空间** — `kernel_contract.json` 声明的内核版本是 `0.10`；仓库发布 tag 是 `v0.12`。这是两个独立的编号空间，不是同一个数字。
+> **Two version spaces** — the kernel version declared in `kernel_contract.json` is `0.10`; the repository tag is a separate numbering space: the latest stable tag is `v0.12`, and the current prerelease is `v0.2.0-beta.2`. They are independent numbers, not the same number.
+> **两个版本空间** — `kernel_contract.json` 声明的内核版本是 `0.10`；仓库 tag 是另一个编号空间：最新稳定 tag 是 `v0.12`，当前预发行是 `v0.2.0-beta.2`。两者是独立编号，不是同一个数字。
+>
+> **Cold start** — to resume iteration, start from [`RETURN_HERE.md`](RETURN_HERE.md).
+> **冷启动** — 恢复迭代从 [`RETURN_HERE.md`](RETURN_HERE.md) 开始。
 
 Stdlib-only rule-execution kernel for AI agents: one written rule set in, one deterministic `ALL PASS` / `FAIL` verdict out — and the verdict cannot be silently loosened.
 
@@ -46,12 +52,12 @@ Subcommands: `whoami`, `check` (`--strict`), `audit`, `bump`, `show <clause-id>`
 
 | Item | Value | Source |
 |---|---|---|
-| Commits at `v0.12` | 5 | `git rev-list --count v0.12` |
+| Commits at `v0.2.0-beta.2` | 10 | `git rev-list --count v0.2.0-beta.2` |
 | Last commit | 2026-11-08 | `git log -1 --date=short` |
 | Check items | 13 gate templates | `bumao_core/bumao_core_gates.py` (`make_*_gate`) |
 | Reverse cases | 1 | `python bumao_core/test_check_rc.py` → `PASS` |
 | Defect ledger | not kept in this repo | — |
-| Releases | 3 tags, `v0.1` → `v0.12`, all 2026-11-08 | `git tag` |
+| Releases | 5 tags, `v0.1` → `v0.2.0-beta.2`, all 2026-11-08 | `git tag` |
 | Changelog | [CHANGELOG.md](CHANGELOG.md) | — |
 
 ## 中文
@@ -64,13 +70,13 @@ Subcommands: `whoami`, `check` (`--strict`), `audit`, `bump`, `show <clause-id>`
 
 ## Roadmap (0.2 — in progress)
 
-Three pieces are under construction. None of them is shipped in this release.
+Three pieces are under construction. The kernel runtime in this prerelease is unchanged from `v0.2.0-beta.1`; the notes below are phase status, not new kernel code.
 
-1. **Pre-execution constraint** — declare intent before acting; the kernel judges the intent before the action runs. Design and sandbox prototype pass; **not wired into the live path**. *(in progress)*
+1. **Pre-execution constraint** — declare intent before acting; the intent is reviewed before the action runs. Wired in the personal edition's MCP `file_write` path: `path` + `intent` go through the L3 review before dispatch. **Default off** — no launcher starts the MCP server, so nothing is intercepted unless you start it. Not wired into the kernel's own `check --strict` path. *(in progress)*
 2. **In-flight supervision** — check continuously while the action is in progress, not only at the end. Design and sandbox prototype pass; **not wired into the live path**. *(in progress)*
-3. **Post-execution audit** — link action, basis, result and exception into one traceable chain. Design and sandbox prototype pass; **not wired into the live path**. *(in progress)*
+3. **Post-execution audit** — link action, basis, result and exception into one traceable chain. Wired in the personal edition (`ledger.py shenji`). *(in progress)*
 
-Status: **in progress** — design and sandbox prototypes are done; live integration is not. This section is a commitment, not a claim of completion.
+Status: **in progress** — pre-execution intent is wired and default-off in the personal edition; in-flight supervision is design-and-sandbox only; the kernel's own check path is unchanged.
 
 ## Architecture
 
