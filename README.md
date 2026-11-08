@@ -128,9 +128,9 @@ assets/                official logos
 
 ## Known issues (not fixed in this batch)
 
-- `contract_test.py` is green: `12 项，0 FAIL，3 SKIP`. The three SKIP lines are the internal-only modules (`facts.py`, `facts_check.py`, `portability_probe.py`) declared as explicit optional dependencies with a per-file reason; a missing optional module no longer counts as a failure.
+- `contract_test.py` is green: `12 项，0 FAIL，0 SKIP，3 N/A`. The three N/A lines are the internal-only modules (`facts.py`, `facts_check.py`, `portability_probe.py`), declared **out of contract scope** in `HOST_CONTRACT.md §十` — they are not optional dependencies and the result is no longer a “skip”. A missing core file is still a FAIL.
 - `check --strict` in this repo is `1/12` red: `A10` is `DENY` by design (the shipped approval-ledger template has no entries). `A13` seeds its baseline on first run and then passes.
-- `bumao_core/gate_count.py` reports `FAIL` for `bumao-xtgl-community` and `bumao-xtgl-minimal`, and `bumao_core/test_equivalence.py` reports `FAIL`: both assume the three editions are checked out as siblings under one work area. On a single-repo clone they cannot resolve the sibling paths and fail. Not fixed this batch.
+- `bumao_core/gate_count.py` and `bumao_core/test_equivalence.py` require the `<HX>/kernel/bumao_core` layout with all three editions checked out as siblings. Outside that layout they print `需要三端同级检出` and exit `2` — not PASS, not FAIL, so a single-repo clone cannot report a false green or a misleading red.
 
 ## Docs / License
 

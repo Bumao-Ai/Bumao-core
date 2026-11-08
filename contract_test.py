@@ -13,9 +13,9 @@ kernel_contract.json 与 bumao_core/。
   3. 隔离扫描只查通用本机形态（盘符绝对路径、用户主目录、UNC），
      不再携带任何本机用户名、盘内根目录或私有目录名字面量。
   4. 用法不再接受「端 web 目录」参数。
-  5. 内部专用件（facts.py／facts_check.py／portability_probe.py）不随公开仓：
-     它们依赖内部多端目录树与本机扫描面，脱敏后即失去原功能。改为显式可选
-     依赖，缺失时打印 SKIP 与原因（见 OPTIONAL_FILES），不再计为 FAIL。
+  5. 内部专用件（facts.py／facts_check.py／portability_probe.py）**不属于契约范围**，
+     已写进 HOST_CONTRACT.md §十。缺失时打印 N/A 与范围理由，既不计 FAIL 也不计 SKIP；
+     若使用者自备同名文件，仍参与编译与隔离扫描。
 
 用法：
     python contract_test.py            # 在 core 仓根目录
@@ -49,15 +49,15 @@ CORE_FILES = (
     "test_gate_registry.py",
 )
 
-# 显式可选依赖：公开仓不带这些内部专用件，缺件是设计结果，不是 FAIL。
-# 若使用者自备同名文件放进 bumao_core/，仍会参与编译与隔离扫描。
-OPTIONAL_FILES = {
+# 契约范围外（HOST_CONTRACT.md §十）：不是可选依赖，不靠「跳过」糊过去。
+# 这些件按定义不参与契约判定，缺件判 N/A（不适用）；若自备同名文件，仍参与编译与隔离扫描。
+CONTRACT_EXCLUDED = {
     "facts.py": "内部文档事实源生成器：依赖内部多端目录树（台账/视图/规则层），"
-                "公开仓无此实物，脱敏后无法产出事实，故不随包。",
+                "不属于宿主契约面，故不随包、不参与判定。",
     "facts_check.py": "facts.py 的配套校验器：输入为内部 facts.json，"
-                      "公开仓无该产物，故不随包。",
+                      "不属于宿主契约面，故不随包、不参与判定。",
     "portability_probe.py": "内部可迁移性探针：按内部目录树与本机临时区布局编写，"
-                            "含主机绝对路径形态，不随包。",
+                            "不属于宿主契约面，故不随包、不参与判定。",
 }
 
 RE_VERSION = re.compile(r"^\d+\.\d+(?:\.\d+)?$")
@@ -74,7 +74,7 @@ class Report:
         self.lines = []
         self.fail = 0
         self.checks = 0
-        self.skips = 0
+        self.na_count = 0
 
     def ok(self, group, name, detail=""):
         self.checks += 1
@@ -85,9 +85,9 @@ class Report:
         self.fail += 1
         self.lines.append("[FAIL][%s] %s%s" % (group, name, ("：" + detail) if detail else ""))
 
-    def skip(self, group, name, reason=""):
-        self.skips += 1
-        self.lines.append("[SKIP][%s] %s%s" % (group, name, ("：" + reason) if reason else ""))
+    def na(self, group, name, reason=""):
+        self.na_count += 1
+        self.lines.append("[N/A][%s] %s%s" % (group, name, ("：" + reason) if reason else ""))
 
     def expect(self, group, name, cond, detail=""):
         if cond:
@@ -143,16 +143,16 @@ def group_b(report, core_dir=CORE_DIR):
             empty.append(name)
     report.expect("B", "核心文件 %d 件在位" % len(CORE_FILES), not missing, str(missing))
     report.expect("B", "核心文件非空", not empty, str(empty))
-    for name, reason in OPTIONAL_FILES.items():
+    for name, reason in CONTRACT_EXCLUDED.items():
         if not (Path(core_dir) / name).is_file():
-            report.skip("B", "可选依赖缺省 " + name, reason)
+            report.na("B", "契约范围外 " + name, reason)
 
 
 def group_c(report, core_dir=CORE_DIR):
     """仓内核心文件可编译（编译产物落临时目录，不写仓）。"""
     bad = []
     names = list(CORE_FILES)
-    names += [n for n in OPTIONAL_FILES if (Path(core_dir) / n).is_file()]
+    names += [n for n in CONTRACT_EXCLUDED if (Path(core_dir) / n).is_file()]
     with tempfile.TemporaryDirectory(prefix="core_contract_") as td:
         for name in names:
             src = Path(core_dir) / name
@@ -254,14 +254,14 @@ def run_target() -> int:
     group_d(report)
     group_f(report)
     scope = [CONTRACT_PATH, Path(__file__)] + [CORE_DIR / n for n in CORE_FILES]
-    scope += [CORE_DIR / n for n in OPTIONAL_FILES if (CORE_DIR / n).is_file()]
+    scope += [CORE_DIR / n for n in CONTRACT_EXCLUDED if (CORE_DIR / n).is_file()]
     scope += [HERE / n for n in ("README.md", "LICENSE", "NOTICE") if (HERE / n).is_file()]
     group_e(report, scope)
     for line in report.lines:
         print(line)
-    print("\n[%s] %d 项，%d FAIL，%d SKIP" % (
+    print("\n[%s] %d 项，%d FAIL，0 SKIP，%d N/A" % (
         "ALL PASS" if report.fail == 0 else "FAIL",
-        report.checks, report.fail, report.skips))
+        report.checks, report.fail, report.na_count))
     return 0 if report.fail == 0 else 1
 
 
