@@ -37,7 +37,7 @@ Subcommands: `whoami`, `check` (`--strict`), `audit`, `bump`, `show <clause-id>`
 
 | Item | Value | Source |
 |---|---|---|
-| Commits | 2 | `git rev-list --count HEAD` (before this facade commit) |
+| Commits at `v0.11` | 2 | `git rev-list --count v0.11` |
 | Last commit | 2026-11-08 | `git log -1 --date=short` |
 | Check items | 13 gate templates | `bumao_core/bumao_core_gates.py` (`make_*_gate`) |
 | Reverse cases | 1 | `python test_check_rc.py` → `PASS` |
