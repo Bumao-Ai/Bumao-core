@@ -126,7 +126,7 @@ assets/                official logos
 
 `kernel_contract.json` must stay one level **above** `bumao_core/` (repository root here, `kernel/` in the editions). That is the path `engine.py` reads; without it, gate `A10` fails with `FileNotFoundError`.
 
-## Known issues (not fixed in this batch)
+## Status and known issues
 
 - `contract_test.py` is green: `12 项，0 FAIL，0 SKIP，3 N/A`. The three N/A lines are the internal-only modules (`facts.py`, `facts_check.py`, `portability_probe.py`), declared **out of contract scope** in `HOST_CONTRACT.md §十` — they are not optional dependencies and the result is no longer a “skip”. A missing core file is still a FAIL.
 - `check --strict` in this repo is `1/12` red: `A10` is `DENY` by design (the shipped approval-ledger template has no entries). `A13` seeds its baseline on first run and then passes.
