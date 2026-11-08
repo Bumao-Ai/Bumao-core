@@ -49,7 +49,7 @@ raise SystemExit(core.main(["check", "--strict"]))   # 退出码即结论
 - `bumao-xtgl-community`：带 56 条通用规则的完整发行版
 - `bumao-xtgl-minimal`：不带规则的骨架发行版
 
-两个发行版都需要把本仓的 `bumao_core/` 放到它们**上一级目录**的 `kernel/` 下，详见各自的 README。
+两个发行版已把本仓的 `bumao_core/` 内置在各自的 `kernel/` 下（clone 即可运行），无需再手工放置；本仓单独用于对接自建宿主。
 
 ## 许可
 
