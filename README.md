@@ -17,7 +17,7 @@ Stdlib-only rule-execution kernel for AI agents: one written rule set in, one de
 ## Quick start (30 seconds)
 
 ```bash
-git clone https://github.com/Bumao-Ai/Bumao-core.git
+git clone -b v0.12 https://github.com/Bumao-Ai/Bumao-core.git
 ```
 
 ```python
@@ -37,12 +37,12 @@ Subcommands: `whoami`, `check` (`--strict`), `audit`, `bump`, `show <clause-id>`
 
 | Item | Value | Source |
 |---|---|---|
-| Commits at `v0.11` | 2 | `git rev-list --count v0.11` |
+| Commits at `v0.12` | 5 | `git rev-list --count v0.12` |
 | Last commit | 2026-11-08 | `git log -1 --date=short` |
 | Check items | 13 gate templates | `bumao_core/bumao_core_gates.py` (`make_*_gate`) |
 | Reverse cases | 1 | `python test_check_rc.py` → `PASS` |
 | Defect ledger | not kept in this repo | — |
-| Releases | 2 tags, `v0.1` → `v0.11`, both 2026-11-08 | `git tag` |
+| Releases | 3 tags, `v0.1` → `v0.12`, all 2026-11-08 | `git tag` |
 | Changelog | [CHANGELOG.md](CHANGELOG.md) | — |
 
 ## 中文
@@ -99,8 +99,17 @@ bumao_core/
   test_check_rc.py     exit-code regression
   test_equivalence.py  engine equivalence regression
   HOST_CONTRACT.md     the 12 members a host must implement
+kernel_contract.json   frozen interface contract (read by A10, one level above bumao_core/)
+contract_test.py       contract self-test
 assets/                official logos
 ```
+
+`kernel_contract.json` must stay one level **above** `bumao_core/` (repository root here, `kernel/` in the editions). That is the path `engine.py` reads; without it, gate `A10` fails with `FileNotFoundError`.
+
+## Known issues (not fixed in this batch)
+
+- `contract_test.py` reports `2 FAIL` out of 12: checks `[B]` and `[C]` expect five modules this repo does not ship (`facts.py`, `facts_check.py`, `host_reference.py`, `portability_probe.py`, `test_gate_registry.py`). The contract file itself passes every `[A]`/`[D]`/`[E]`/`[F]` check.
+- `bumao_core/gate_count.py` reports `FAIL` for `bumao-xtgl-community` and `bumao-xtgl-minimal`, and `bumao_core/test_equivalence.py` reports `FAIL`: both assume the three editions are checked out as siblings under one work area. On a single-repo clone they cannot resolve the sibling paths and fail. Not fixed this batch.
 
 ## Docs / License
 
