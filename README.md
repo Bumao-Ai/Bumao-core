@@ -5,6 +5,9 @@
 ![gates](https://img.shields.io/badge/gate%20templates-13-brightgreen)
 ![runtime](https://img.shields.io/badge/runtime-stdlib%20only-informational)
 
+> **Two version spaces** — the kernel version declared in `kernel_contract.json` is `0.10`; the repository release tag is `v0.12`. They are two independent numbering spaces, not the same number.
+> **两个版本空间** — `kernel_contract.json` 声明的内核版本是 `0.10`；仓库发布 tag 是 `v0.12`。这是两个独立的编号空间，不是同一个数字。
+
 Stdlib-only rule-execution kernel for AI agents: one written rule set in, one deterministic `ALL PASS` / `FAIL` verdict out — and the verdict cannot be silently loosened.
 
 **What it is** — a kernel, not a framework. It ships no rules of its own.
