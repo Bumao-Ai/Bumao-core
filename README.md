@@ -63,11 +63,11 @@ Subcommands: `whoami`, `check` (`--strict`), `audit`, `bump`, `show <clause-id>`
 
 Three pieces are under construction. None of them is shipped in this release.
 
-1. **Pre-execution constraint** — declare intent before acting; the kernel judges the intent before the action runs.
-2. **In-flight supervision** — check continuously while the action is in progress, not only at the end.
-3. **Post-execution audit** — link action, basis, result and exception into one traceable chain.
+1. **Pre-execution constraint** — declare intent before acting; the kernel judges the intent before the action runs. Design and sandbox prototype pass; **not wired into the live path**. *(in progress)*
+2. **In-flight supervision** — check continuously while the action is in progress, not only at the end. Design and sandbox prototype pass; **not wired into the live path**. *(in progress)*
+3. **Post-execution audit** — link action, basis, result and exception into one traceable chain. Design and sandbox prototype pass; **not wired into the live path**. *(in progress)*
 
-Status: **in progress**. This section is a commitment, not a claim of completion.
+Status: **in progress** — design and sandbox prototypes are done; live integration is not. This section is a commitment, not a claim of completion.
 
 ## Architecture
 
