@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bumao-core"
+version = "0.10"
+description = "Stdlib-only rule-execution kernel: one rule set in, one deterministic verdict out."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Bumao" }]
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/Bumao-Ai/Bumao-core"
+
+[tool.setuptools]
+packages = ["bumao_core"]
+
+[tool.setuptools.package-data]
+bumao_core = ["HOST_CONTRACT.md"]

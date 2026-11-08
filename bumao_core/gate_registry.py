@@ -92,7 +92,10 @@ def _patch_engine_register():
     try:
         import engine as _fce
     except ImportError:
-        return False
+        try:
+            from . import engine as _fce
+        except ImportError:
+            return False
     if getattr(_fce, "_gate_registry_patched", False):
         return True
     _fce._original_register = _fce.register
@@ -450,7 +453,10 @@ class GateRegistry:
 
     def _engine_mod(self):
         if self._engine is None:
-            import engine as _eng  # 与 _patch_engine_register() 同一导入口径
+            try:
+                import engine as _eng  # 与 _patch_engine_register() 同一导入口径
+            except ImportError:
+                from . import engine as _eng
             self._engine = _eng
         return self._engine
 
