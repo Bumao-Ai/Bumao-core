@@ -8,8 +8,8 @@ Status: maintenance pause
 ![gates](https://img.shields.io/badge/gate%20templates-13-brightgreen)
 ![runtime](https://img.shields.io/badge/runtime-stdlib%20only-informational)
 
-> **Two version spaces** — the kernel version declared in `kernel_contract.json` is `0.10`; the repository tag is a separate numbering space: the latest stable tag is `v0.12`, and the current prerelease is `v0.2.0-beta.3`. They are independent numbers, not the same number.
-> **两个版本空间** — `kernel_contract.json` 声明的内核版本是 `0.10`；仓库 tag 是另一个编号空间：最新稳定 tag 是 `v0.12`，当前预发行是 `v0.2.0-beta.3`。两者是独立编号，不是同一个数字。
+> **Two version spaces** — the kernel version declared in `kernel_contract.json` is `0.10`; the repository tag is a separate numbering space: the latest stable tag is `v0.12`, and the current prerelease is `v0.2.0-beta.4`. They are independent numbers, not the same number.
+> **两个版本空间** — `kernel_contract.json` 声明的内核版本是 `0.10`；仓库 tag 是另一个编号空间：最新稳定 tag 是 `v0.12`，当前预发行是 `v0.2.0-beta.4`。两者是独立编号，不是同一个数字。
 >
 > **Cold start** — to resume iteration, start from [`RETURN_HERE.md`](RETURN_HERE.md).
 > **冷启动** — 恢复迭代从 [`RETURN_HERE.md`](RETURN_HERE.md) 开始。
@@ -52,12 +52,12 @@ Subcommands: `whoami`, `check` (`--strict`), `audit`, `bump`, `show <clause-id>`
 
 | Item | Value | Source |
 |---|---|---|
-| Commits at `v0.2.0-beta.3` | 11 | `git rev-list --count v0.2.0-beta.3` |
-| Last commit | 2026-11-08 | `git log -1 --date=short` |
+| Commits at `v0.2.0-beta.4` | 14 | `git rev-list --count v0.2.0-beta.4` |
+| Last commit | 2026-11-09 | `git log -1 --date=short` |
 | Check items | 13 gate templates | `bumao_core/bumao_core_gates.py` (`make_*_gate`) |
 | Shipped tests | `test_check_rc.py` · `test_a10_policy.py` (7/7) · `test_gate_registry.py` | `python bumao_core/<test>.py` |
 | Defect ledger | not kept in this repo | — |
-| Releases | 6 tags, `v0.1` → `v0.2.0-beta.3`, all 2026-11-08 | `git tag` |
+| Releases | 7 tags, `v0.1` → `v0.2.0-beta.4`, all 2026-11 | `git tag` |
 | Changelog | [CHANGELOG.md](CHANGELOG.md) | — |
 
 ## 中文

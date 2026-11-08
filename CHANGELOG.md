@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.0-beta.4 — 2026-11-09
+
+0.2 的第四个 beta，仍不是已完成的 0.2。The fourth beta of 0.2; 0.2 itself is not finished.
+
+- A10／A13 判据取件修正（判定结论不变，仍为 DENY）：单仓 clone 下「区根」被取成仓外上一级，A10 读不到随包审批册结构，理由变成「无审批册」。改为「本仓根带 `30_taizhang` 时以本仓根为区根」。现在 A10 读到 `30_taizhang/shenpi_jilu.txt` 模板，输出 `A10 判定=DENY ｜ 审批册里没有可解析的【第 N 号】条目`。
+- `find_approval_ledger()` 不再扫描兄弟目录。旧实现在发布仓同级布局下会读到别仓审批册（本次即读到 `bumao-core` 的模板），红得对但理由错；取件范围收回到本层到根的直系祖先。
+- 随包件不变：`facts.py`／`facts_check.py`／`portability_probe.py` 仍按 `HOST_CONTRACT.md §十` 判 N/A，不靠 SKIP。
+- 契约自测 `12 项，0 FAIL，0 SKIP，3 N/A`；`test_a10_policy.py` 7/7；`test_gate_registry.py` 7/7。
+- 本仓 `check --strict`：`1/12` red（仅 A10，判 DENY 为设计）。
+- 未做：A10 转 `PASS` 需真实当日授权条目；`gate_count.py`／`test_equivalence.py` 在单仓 clone 下按退出码 2「不可判定」，不判 PASS/FAIL。
+
 ## 0.2.0-beta.3 — 2026-11-08
 
 0.2 的第三个 beta，不是已完成的 0.2。The third beta of 0.2; 0.2 itself is not finished.
