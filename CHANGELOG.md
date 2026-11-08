@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0-beta.3 — 2026-11-08
+
+0.2 的第三个 beta，不是已完成的 0.2。The third beta of 0.2; 0.2 itself is not finished.
+
+- 契约自测转绿：`contract_test.py` 实跑 `12 项，0 FAIL，3 SKIP`，rc=0。`host_reference.py`／`test_gate_registry.py` 随包（已脱敏，无本机绝对路径）；`facts.py`／`facts_check.py`／`portability_probe.py` 改为显式可选依赖，缺件逐条打印 SKIP 与原因，不再计 FAIL。`gate_registry.py` 补上 `GateRegistry` 类（`test_gate_registry.py` 所需）。
+- A10 可判：无审批册／无条目／当日无授权行／版本不一致 → `A10 判定=DENY`，detail 写明按策略 `deny` 不放行；当日授权且版本一致 → `A10 判定=PASS`。随包 `30_taizhang/shenpi_jilu.txt` 结构模板（零条目，公开仓固定判 DENY）。`test_a10_policy.py` 实跑 7 项 7 PASS。
+- 意图单 `enforce` 受控验证（personal live 树，两次独立 run 实跑）：批准目录内写入放行并落盘；批准目录外写入被拒（`不在批准目录/文件集合内`），目标文件 SHA-256 前后一致；不设环境变量时 `BUMO_JIANCHA_MODE=off`、适配器返回 `None`。能开、能拦、默认 off。
+- 已知红项：本仓 `check --strict` 1/12 red —— A10 判 DENY 是设计结果（模板零条目）；A13 首次检出新纳入基线后 PASS。`gate_count.py`／`test_equivalence.py` 仍需三端同级检出。
+- community `check --strict` 曾出现一次 `4/44`，**一次未复现，原因未知**；18 次复跑均为 `A10`／`A13` 两条。
+
 ## 0.2.0-beta.2 — 2026-11-08
 
 0.2 的第二个 beta，不是已完成的 0.2。The second beta of 0.2; 0.2 itself is not finished.
