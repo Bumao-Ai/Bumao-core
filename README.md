@@ -18,18 +18,24 @@ Stdlib-only rule-execution kernel for AI agents: one written rule set in, one de
 
 ```bash
 git clone -b v0.12 https://github.com/Bumao-Ai/Bumao-core.git
+cd Bumao-core
+python bumao_core/test_check_rc.py     # smoke test, prints PASS
 ```
+
+Then wire it into your own host. The snippet below runs from the repository root; two symbols are yours to supply and are marked `# replace`:
 
 ```python
 import sys
-sys.path.insert(0, "path/to/bumao_core")
+sys.path.insert(0, "bumao_core")                  # repo-relative, no change needed
 import engine as core
 
-core.configure(rules_db_module=my_rules_db)      # must be called first
-core.register("B1", my_gate, "my first gate")
+core.configure(rules_db_module=my_rules_db)       # replace my_rules_db with your rules module
+core.register("B1", my_gate, "my first gate")     # replace my_gate with your gate function
 core.set_expected("MyEdition", frozenset(["B1"])) # anti-shrink baseline
 raise SystemExit(core.main(["check", "--strict"]))# exit code is the verdict
 ```
+
+Two symbols are host-supplied: `my_rules_db` (your rules module) and `my_gate` (your gate function). Everything else in the block is copy-paste as is.
 
 Subcommands: `whoami`, `check` (`--strict`), `audit`, `bump`, `show <clause-id>`, `selftest`, `refresh`.
 
@@ -40,7 +46,7 @@ Subcommands: `whoami`, `check` (`--strict`), `audit`, `bump`, `show <clause-id>`
 | Commits at `v0.12` | 5 | `git rev-list --count v0.12` |
 | Last commit | 2026-11-08 | `git log -1 --date=short` |
 | Check items | 13 gate templates | `bumao_core/bumao_core_gates.py` (`make_*_gate`) |
-| Reverse cases | 1 | `python test_check_rc.py` → `PASS` |
+| Reverse cases | 1 | `python bumao_core/test_check_rc.py` → `PASS` |
 | Defect ledger | not kept in this repo | — |
 | Releases | 3 tags, `v0.1` → `v0.12`, all 2026-11-08 | `git tag` |
 | Changelog | [CHANGELOG.md](CHANGELOG.md) | — |
