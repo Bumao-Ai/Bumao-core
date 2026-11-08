@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.2.0-beta.5 — 2026-11-09
+
+0.2 的第五个 beta，仍是未完成的 0.2；**这是本阶段的最后一个版本**，受时间与精力所限，未来一个月不再主动迭代（只做维护与修复）。The fifth beta of 0.2 — the last release of this phase; active iteration pauses for about a month.
+
+本版把工作树里积压的修复落地，并真发布了上一版只在文档里承诺过的三个参数。
+
+- **修 `build_parser()` 重复注册**：旧代码连续两次 `sub.add_parser("check")`，调用 `build_parser()` 即抛 `argparse.ArgumentError: conflicting subparser: check`（beta.3／beta.4 均中）。现在只注册一次，`main()` 复用同一个解析器，不再自建第二份。回归用例 `bumao_core/test_build_parser.py`（4 项）。
+- **`--quick` 真实生效**：只跑 A 段结构闸，跳过 B/Z 段、防缩水对账与检查凭据写入；结论行明写「不能替代 check --strict」，不再只写在文档里。
+- **`--full` 真实生效**：`whoami --full` 追加内核路径、Python 版本、规则目录、子命令清单 4 行；不带 `--full` 时输出与历史版本逐字一致。
+- **`selftest --kernel` 真实生效**：不读宿主规则库、不写宿主账本，6 项（engine 可导入／CLI 7 子命令无重复／Out 计数／防缩水往返／gate_registry 可导入且 A10 可判／未注入守卫）。不带 `--kernel` 时是宿主集成自检，未注入 `rules_db` 明确打印原因并返回 2。
+- **两种加载方式并存**：新增 `pyproject.toml` 与 `bumao_core/__init__.py`，`pip install -e .` 后 `from bumao_core import engine` 可用；历史 `sys.path.insert` + `import engine` 保持可用。内核内部互导已同时兼容相对与扁平导入（`_import_gate_registry()`）。`pyproject.toml` 只声明打包，无运行时依赖（仍为 stdlib only）。
+- **新增 `examples/minimal_host.py`**：不依赖三个产品仓，复制即可跑出一次真实 check。示例不带审批册，因此 A10 判 DENY、`check` 退出码为 1——这是内核默认不放行，不是示例失败，脚本自己会写明。
+- **`bumao_core_rules.py` 定性为参考实现**：内核与三端均零引用，且不满足宿主 12 成员契约，不得直接传给 `configure()`；文档改为明确警示，不再只是「未接线的死代码」。
+- **实测**：`contract_test.py` `12 项，0 FAIL，0 SKIP，3 N/A`（rc=0）；`test_build_parser.py` 4/4；`test_a10_policy.py` 7/7；`test_gate_registry.py` 7/7；`selftest --kernel` 6/6。
+- **已知红项（设计行为，不放宽）**：`python examples/minimal_host.py` 的 `check` 为 `FAIL (2/13 gates red)` —— `A10`（随包审批册零条目 → 策略 `deny` → DENY）与 `A13`（本机已有基线且当日无授权条目 → 改而未授权）。新解压件首跑时 A13 会先纳入基线再通过，只剩 A10。要让 A10 转 `PASS`，只能由使用者本人在 `30_taizhang/shenpi_jilu.txt` 写当日授权条目；随包件里没有。
+- **没做的**：三个产品端的 `kernel/bumao_core/` 不在本仓范围内；`gate_count.py`／`test_equivalence.py` 仍要求三端同级检出，单仓 clone 下按退出码 2「不可判定」。
+
 ## 0.2.0-beta.4 — 2026-11-09
 
 0.2 的第四个 beta，仍不是已完成的 0.2。The fourth beta of 0.2; 0.2 itself is not finished.
