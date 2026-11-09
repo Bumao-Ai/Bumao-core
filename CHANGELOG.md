@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.6 — 2026-11-09
+
+A13 基线按端分文件存放；首次纳入基线时如实标注「未授权基线建立」。判定口径不变。
+
+- `engine.py`：`_round_auth_gate` 的基线文件由 `00_meta/a13_benlun_jizhun.json` 改为 `a13_benlun_jizhun.<端键>.json`；端键由入口位置推导（`<区根>/<产品>/10_rac/<入口>` → `<产品>`），内核不含任何端名。
+- `engine.py`：`round_auth_verdict` 在「本轮无改动但有首次纳入」时不再只说「无改动」，改为明写「未授权基线建立，不以『无改动』冒充已授权」。
+- `__init__.py`：`__version__` 0.2.5 → 0.2.6。
+- 未变：12 个契约成员、7 个子命令、`CORE_VERSION`（0.10）；A10／B16 等闸门判据无改动。
+
+**English**
+- `engine.py`: the A13 round baseline moves from one shared `00_meta/a13_benlun_jizhun.json` to per-edition `a13_benlun_jizhun.<edition-key>.json`; the key is derived from the entry path (`<root>/<product>/10_rac/<entry>` → `<product>`), so the kernel still contains no edition names.
+- `engine.py`: when a round adds files to the baseline for the first time, the verdict now says "unauthorised baseline creation" instead of reporting "no change".
+- `__init__.py`: `__version__` 0.2.5 → 0.2.6.
+- Unchanged: 12 contract members, 7 subcommands, `CORE_VERSION` (0.10); A10 / B16 verdicts untouched.
+
 > 发版流程：每次发版，Release 正文必须中英双侧齐全（中文在前、英文在后，英文逐条对应，不得只给摘要）；只有一侧不算发完。核对项见 `CONTRIBUTING.md`「发版清单（维护者）」。
 
 ## 0.3.0-beta.4 — 2026-11-09
