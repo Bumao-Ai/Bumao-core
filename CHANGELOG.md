@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.2.1 — 2026-11-09
+
+**改了什么**
+- 运行层随包：`bumao_core/jiancha/` 新增 `supervisor.py`、`ledger.py`、`scope.py`、`reasons.py`、`qingli.py`、`personal_adapter.py`、`gate_check.py`、`jiancha_canshu.json`、`schema/reason_codes.json` 与 `__init__.py`。包内全部相对导入，不覆盖宿主同名模块（宿主 `10_rac/ledger.py` 是另一套账本）。`engine.py` 不导入它，内核判定不受影响。
+- 修 `recover_restore` 失败路径：基线副本缺失、或写回后哈希与基线不符，逐件记入 `failed`，整轮记 `recovery=fail`，抛 `RuntimeError`，不置 `recovered`。此前这类件被静默跳过并记 `result=ok`。
+- `schema/reason_codes.json` 新增 `RESTORE_FAILED`（stage=action，ticket=true）。
+- 文档：README 与 `HOST_CONTRACT.md` 补「包含运行层」说明与目录树；补记缺失的 0.2.0 条目。
+
+**验了什么**
+- `selftest --kernel` 6/6，rc=0；`contract_test.py` 12 项 0 FAIL，rc=0；`bumao_core/jiancha` 导入可用。
+- 活区演练：恢复成功路径（2 件恢复、1 件隔离、in_scope 件保留、链不断）；缺基线副本 → `RESTORE_FAILED` + `recovery=fail` + 抛错 + `RECOVERED=False`；`periodic_check` 两周期 PASS、第三周期 `EXTERNAL_DRIFT` 且 guard 拒绝停机；`qingli` 17→15 件、删除清单与计划逐项一致、证据束保留 10 份。
+
+**还差什么**
+- 运行层只有包、没有装载器：宿主必须自己 `import bumao_core.jiancha`，没有 `BUMO_JIANCHA_MODE` 开关；`personal_adapter.py`／`gate_check.py` 只适用于宿主布局。
+- 恢复半成功语义未实现可选项：现为「停机等人」（任一失败中止整轮、已恢复件保留），不提供「继续恢复剩余」，也没有 `partial` 状态。
+- community 凭据 `check_last.json` 丢失：可删面已定位，但具体那一次未查明。
+- community `4/44` 只定位到触发条件：凭据缺失（基线在）复现 `3/44`（A10+B19+B22）；凭据存在但过期复现 `4/44`（A10+B16+B19+B22）；最初那次无逐条留存，无法归因。
+- 三端内核未跟随：community／minimal 的 `engine.py` 仍是 `7bd00e2cd72d`（本仓 `c49b8e9ea198`），并缺 `host_reference.py`／`test_a10_policy.py`／`test_gate_registry.py`；personal 无 `kernel/bumao_core`。
+- community 审批册未新建；其 A10／A13 仍是已知存量缺口。
+
+## 0.2.0 — 2026-11-09
+
+补记（此前缺失此条目）。
+
+- 修 A13 跨盘符 `relpath`：只有同盘才做相对路径，不同盘按「区根外入口」跳过并在判定理由中写明件数，不再抛 `ValueError: path is on mount ...`；同盘判定结果不变。
+- `--quick` FAIL 结论行写明「quick 仅 A 段，B/Z 未跑 —— 不能替代 check --strict」。
+- `minimal_host.py` 注释改为实测（A10 + A13，`FAIL (2/13)`）；README 改为两分支都成立的说法。
+- 验：`contract_test.py` 12 项 0 FAIL；`selftest --kernel` 6/6；三门槛活区演练；`test_build_parser.py`。
+- 资产 `bumao-core-0.2.0.zip`：923889 B，SHA-256 `071ca5277c16d93fd8871958bfb9a5c37784beed09224b3b8afb6b038b035f0a`。
+
 ## 0.2.0-beta.5 — 2026-11-09
 
 0.2 的第五个 beta，仍是未完成的 0.2；**这是本阶段的最后一个版本**，受时间与精力所限，未来一个月不再主动迭代（只做维护与修复）。The fifth beta of 0.2 — the last release of this phase; active iteration pauses for about a month.

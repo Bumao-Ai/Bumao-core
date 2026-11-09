@@ -8,8 +8,8 @@ Status: maintenance pause
 ![gates](https://img.shields.io/badge/gate%20templates-13-brightgreen)
 ![runtime](https://img.shields.io/badge/runtime-stdlib%20only-informational)
 
-> **Two version spaces** — the kernel version declared in `kernel_contract.json` is `0.10`; the repository tag is a separate numbering space: the latest stable tag is `v0.12`, and the current prerelease is `v0.2.0-beta.5`. They are independent numbers, not the same number.
-> **两个版本空间** — `kernel_contract.json` 声明的内核版本是 `0.10`；仓库 tag 是另一个编号空间：最新稳定 tag 是 `v0.12`，当前预发行是 `v0.2.0-beta.5`。两者是独立编号，不是同一个数字。
+> **Two version spaces** — the kernel version declared in `kernel_contract.json` is `0.10`; the repository tag is a separate numbering space: the latest stable tag is `v0.12`, the latest release is `v0.2.2`, and `v0.2.1` was skipped. They are independent numbers, not the same number.
+> **两个版本空间** — `kernel_contract.json` 声明的内核版本是 `0.10`；仓库 tag 是另一个编号空间：最新稳定 tag 是 `v0.12`，最新发布是 `v0.2.2`，`v0.2.1` 已跳过。两者是独立编号，不是同一个数字。
 >
 > **Cold start** — to resume iteration, start from [`RETURN_HERE.md`](RETURN_HERE.md).
 > **冷启动** — 恢复迭代从 [`RETURN_HERE.md`](RETURN_HERE.md) 开始。
@@ -52,6 +52,8 @@ Subcommands: `whoami` (`--full`), `check` (`--strict`, `--quick`), `audit`, `bum
 - `--strict` is a legacy-compatible flag: every FAIL already returns a non-zero exit code, so it does not change any judgement.
 - `whoami --full` appends four diagnostic lines; without it the output is byte-identical to earlier versions.
 
+**Runtime layer (0.2.1+)** — `bumao_core/jiancha/` ships the in-flight supervision package (supervisor, action ledger, scope, reason codes, cleanup). `engine.py` does not import it and it changes no kernel verdict; the host imports it explicitly. The host-layout adapters (`personal_adapter.py`, `gate_check.py`) do nothing useful in a bare clone.
+
 ## Self-test: kernel vs host
 
 Two entries, deliberately separate — the kernel one needs no host:
@@ -78,12 +80,12 @@ Both loading styles work on the same file: `pip install -e .` + `from bumao_core
 
 | Item | Value | Source |
 |---|---|---|
-| Commits at `v0.2.0-beta.5` | 16 | `git rev-list --count v0.2.0-beta.5` |
+| Commits at `v0.2.2` | 17 | `git rev-list --count v0.2.2` |
 | Last commit | 2026-11-09 | `git log -1 --date=short` |
 | Check items | 13 gate templates | `bumao_core/bumao_core_gates.py` (`make_*_gate`) |
 | Shipped tests | `test_check_rc.py` · `test_build_parser.py` · `test_a10_policy.py` (7/7) · `test_gate_registry.py` | `python bumao_core/<test>.py` |
 | Defect ledger | not kept in this repo | — |
-| Releases | 8 tags, `v0.1` → `v0.2.0-beta.5`, all 2026-11 | `git tag` |
+| Releases | 10 tags, `v0.1` → `v0.2.2`, all 2026-11 | `git tag` |
 | Changelog | [CHANGELOG.md](CHANGELOG.md) | — |
 
 ## 中文
@@ -96,13 +98,13 @@ Both loading styles work on the same file: `pip install -e .` + `from bumao_core
 
 ## Roadmap (0.2 — in progress)
 
-Three pieces are under construction. `v0.2.0-beta.3` changes the kernel runtime: gate `A10` now returns an explicit `PASS`/`DENY` verdict instead of a “ledger not found” hint, and `gate_registry.py` gains the `GateRegistry` class. The contract self-test is green in this repo.
+Three pieces are in progress (item 2 now ships in-repo). `v0.2.0-beta.3` changes the kernel runtime: gate `A10` now returns an explicit `PASS`/`DENY` verdict instead of a “ledger not found” hint, and `gate_registry.py` gains the `GateRegistry` class. The contract self-test is green in this repo.
 
 1. **Pre-execution constraint** — declare intent before acting; the intent is reviewed before the action runs. Wired in the personal edition's MCP `file_write` path: `path` + `intent` go through the L3 review before dispatch. **Default off** — no launcher starts the MCP server, so nothing is intercepted unless you start it. Controlled run in beta.3: in-scope write allowed; out-of-scope write denied and the target file's SHA-256 unchanged before/after. Not wired into the kernel's own `check --strict` path. *(in progress)*
-2. **In-flight supervision** — check continuously while the action is in progress, not only at the end. Design and sandbox prototype pass; **not wired into the live path**. *(in progress)*
+2. **In-flight supervision** — check continuously while the action is in progress, not only at the end. As of 0.2.2 the runtime ships in-repo as `bumao_core/jiancha/`; it stays **default off** and is not wired into the live path. *(shipped, default off)*
 3. **Post-execution audit** — link action, basis, result and exception into one traceable chain. Wired in the personal edition (`ledger.py shenji`). *(in progress)*
 
-Status: **in progress** — pre-execution intent is wired and default-off in the personal edition; in-flight supervision is design-and-sandbox only; the kernel's own check path is unchanged.
+Status: **in progress** — pre-execution intent is wired and default-off in the personal edition; in-flight supervision ships in `bumao_core/jiancha/` but stays default off; the kernel's own check path is unchanged.
 
 ## Architecture
 
@@ -138,6 +140,16 @@ bumao_core/
   bumao_core_gates.py  13 reusable gate templates
   bumao_core_rules.py  参考装载器（参考实现，不参与运行时）
   host_reference.py    minimal host skeleton (GateRegistry only)
+  jiancha/             in-flight supervision runtime (0.2.2+, default off)
+    supervisor.py      interrupt / restore / halt state machine
+    ledger.py          append-only action ledger (hash-chained)
+    scope.py           in/out-of-scope and frozen-zone resolution
+    reasons.py         reason-code lookup
+    qingli.py          evidence and baseline retention cleanup
+    personal_adapter.py host-layout adapter (inert in a bare clone)
+    gate_check.py      host gate A/B self-check (host-layout only)
+    jiancha_canshu.json runtime parameters
+    schema/reason_codes.json reason codes, incl. RESTORE_FAILED
   __init__.py          package entry for `pip install -e .`
   test_check_rc.py     exit-code regression
   test_build_parser.py CLI parser regression (duplicate-subcommand defect)
@@ -160,9 +172,10 @@ assets/                official logos
 ## Status and known issues
 
 - `contract_test.py` is green: `12 项，0 FAIL，0 SKIP，3 N/A`. The three N/A lines are the internal-only modules (`facts.py`, `facts_check.py`, `portability_probe.py`), declared **out of contract scope** in `HOST_CONTRACT.md §十` — they are not optional dependencies and the result is no longer a “skip”. A missing core file is still a FAIL.
-- `check --strict` in this repo is `1/12` red: `A10` is `DENY` by design (the shipped approval-ledger template has no entries). `A13` seeds its baseline on first run and then passes. In an existing working tree that already has an A13 baseline, editing a core file without a same-day approval entry turns `A13` red by design.
+- `check --strict` in this repo is `1/12` red: `A10` is `DENY` by design (the shipped ledger's single entry does not satisfy L2's same-day rule). `A13` seeds its baseline on first run and then passes. In an existing working tree that already has an A13 baseline, editing a core file without a same-day approval entry turns `A13` red by design.
 - `bumao_core/gate_count.py` and `bumao_core/test_equivalence.py` require the `<HX>/kernel/bumao_core` layout with all three editions checked out as siblings. Outside that layout they print `需要三端同级检出` and exit `2` — not PASS, not FAIL, so a single-repo clone cannot report a false green or a misleading red.
 - `python examples/minimal_host.py` runs a real check without any edition. Its `check` exit code is `1` because the sample ships no approval ledger, so `A10` is `DENY` by design; the script prints this explicitly.
+- `bumao_core/jiancha/` is the in-flight supervision runtime included as of 0.2.1. `engine.py` does not import it; the host imports it explicitly. `personal_adapter.py` and `gate_check.py` assume the host directory layout.
 
 ## Docs / License
 
