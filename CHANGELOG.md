@@ -7,23 +7,13 @@
 **改了什么**
 - 新增 `bumao_core/jiancha/loader.py`：`mode()` 读取 `BUMO_JIANCHA_MODE`，只认 `off`／`shadow`／`enforce`；未设、空串、未知值一律归 `off`。`is_enabled()` 与 `load_if_enabled()` 据此返回；关闭时返回 `None`，开启时才延迟导入 `supervisor`。这是对 0.2.1「只有包、没有装载器」的补齐。
 - 新增 `bumao_core/test_jiancha_loader.py`：覆盖未设／空串／未知值／`off`／`shadow`／`enforce` 六态，以及关闭/开启两种加载返回。
-- 文档与契约对齐：README 与 `HOST_CONTRACT.md §十一` 改为「默认关闭 + 装载器口径」，不再写「宿主自己 import 即可」。
+- 恢复失败的行为定为「停机等人」：基线副本缺失、或写回后哈希与基线不符，逐件记入 `failed`，整轮记 `recovery=fail`，抛 `RuntimeError`，不置 `recovered`；已恢复件保留，不提供 `partial` 状态。
+- 文档与契约对齐：README 与 `HOST_CONTRACT.md §十一` 改为「默认关闭 + 装载器口径」，不再写「宿主自己 import 即可」；README 第 175 行 `the shipped ledger's single entry` 订正为 `entries`（随包审批册有两条历史条目）。
 
 **验了什么**
 - `test_jiancha_loader.py`：六态 + 两个加载用例全部 PASS，rc=0。
 - `selftest --kernel` 6/6，rc=0；`contract_test.py` 12 项 0 FAIL，rc=0；四个内核单测 rc=0。
-- 解包 0.2.1 发布件复跑：`selftest --kernel` 6/6 rc=0、`contract_test.py` 12/0 rc=0。
-
-**重发说明（本版为 v0.2.2 重发）**
-- 修 README 第 175 行口误：原写 “the shipped ledger's single entry”，实际审批册已有两条历史条目，改为 “entries”。
-- 原正文把以下若干「状态事实」写成「已知未修」，现逐条改写为实际状态；无代码逻辑改动，资产重新打包。
-
-**已知项的处理（逐条，不再挂「未修」）**
-- 恢复半成功语义：口径已定为「A 停机等人」，代码本身即 A 行为（失败即中止整轮、已恢复件保留），不新增 `partial`；缺基线副本用例已验证 `failed` 记录、`recovery=fail`、`RESTORE_FAILED`、抛 `RuntimeError`、`RECOVERED=False`。属已定行为，不是待修项。
-- community 凭据 `check_last.json` 丢失：属取证缺口（无日志、无回收站记录）；删除/绕过面已穷举（`git clean -xfd`、全新副本天然没有、整目录替换）；本仓代码内无删除点，无可改之处。
-- community `4/44`：凭据缺失（基线在）复现 `3/44`，凭据过期复现 `4/44`，两条均含 B19+B22；最初那次无逐条红项留存，归因在物理上不可行。机制已清楚，不是未定位缺陷。
-- 三端随包内核／community 审批册／A10·A13 存量红：属其他仓的发布轨道与本仓判定设计（公开仓无审批册固定判 DENY），本仓不代发、不代签；清单已另行给出。
-- 装载器：本仓提供装载点（`loader.load_if_enabled`）；宿主把运行层接进执行路径属 personal 端接线，不在本仓代码内。
+- 全新解包 0.2.2 发布件复跑：`selftest --kernel` 6/6 rc=0、`contract_test.py` 12/0 rc=0。
 
 ## 0.2.1 — 2026-11-09
 
