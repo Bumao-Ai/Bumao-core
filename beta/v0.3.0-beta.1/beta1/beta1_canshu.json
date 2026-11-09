@@ -1,0 +1,15 @@
+{
+  "_说明": "Bumao Core 0.3 beta1 最小骨架参数件。仅沙盒实验用，不参与任何已发布产品。",
+  "schema": "beta1/1",
+  "workspace": "workspace",
+  "run_dir": "run",
+  "agents": "run/agents.json",
+  "nonces": "run/nonces.json",
+  "ledger": "run/actions.jsonl",
+  "chain_seed": "ACT-GENESIS-v0.3-beta1-261109",
+  "rule_set": "beta1/1",
+  "rules": "rules_beta1.json",
+  "denied_zones": ["_frozen", "90_lishi", "00_meta", ".git"],
+  "nonce_ttl_sec": 300,
+  "approval_actions": []
+}

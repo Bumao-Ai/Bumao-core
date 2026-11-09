@@ -1,0 +1,17 @@
+{
+  "schema": "rules_beta1/1",
+  "rule_set": "beta1/1",
+  "rules": [
+    {"rule_id": "R0.1", "name": "identity_known", "decision": "DENY", "error_code": "AGENT_UNKNOWN"},
+    {"rule_id": "R0.2", "name": "signature_valid", "decision": "DENY", "error_code": "BAD_SIGNATURE"},
+    {"rule_id": "R0.3", "name": "nonce_fresh", "decision": "DENY", "error_code": "REPLAY"},
+    {"rule_id": "R0.4", "name": "capability_declared", "decision": "DENY", "error_code": "CAPABILITY_MISSING"},
+    {"rule_id": "R0.5", "name": "action_allowed", "decision": "DENY", "error_code": "ACTION_NOT_ALLOWED"},
+    {"rule_id": "R0.6", "name": "target_form", "decision": "ERROR", "error_code": "TARGET_FORM_INVALID"},
+    {"rule_id": "R0.7", "name": "denied_zone", "decision": "DENY", "error_code": "OUT_OF_SCOPE"},
+    {"rule_id": "R0.8", "name": "capability_scope", "decision": "DENY", "error_code": "OUT_OF_SCOPE"},
+    {"rule_id": "R0.9", "name": "precondition", "decision": "WARNING", "error_code": "TARGET_NOT_FOUND"},
+    {"rule_id": "R0.10", "name": "approval_required", "decision": "REQUIRE_APPROVAL", "error_code": "NEED_APPROVAL"},
+    {"rule_id": "R0.11", "name": "within_grant", "decision": "ALLOW", "error_code": ""}
+  ]
+}
