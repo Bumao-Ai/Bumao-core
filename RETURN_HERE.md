@@ -12,8 +12,8 @@ Iteration is paused; the current prerelease is stable and usable as-is. When wor
    先分清两个版本空间：稳定 tag `v0.2.6`、预发行 `v0.3.0-beta.4`、`kernel_contract.json` 的 `0.10`。
 
 2. **The current verdict, twice**
-   `python bumao_core/test_check_rc.py` (expect one PASS) and `python contract_test.py` (12 items, 2 FAIL because 5 modules are not shipped). Two runs must agree before you trust them.
-   先跑 `test_check_rc.py` 与 `contract_test.py`；后者 12 项 2 FAIL 属预期（缺 5 个未随附模块），两次一致才算基线。
+   `python bumao_core/test_check_rc.py` (expect one PASS) and `python contract_test.py` (12 items, 0 FAIL, 3 N/A — the three are scripts outside the contract face). Two runs must agree before you trust them.
+   先跑 `test_check_rc.py` 与 `contract_test.py`；后者 12 项 0 FAIL、3 N/A（3 项为契约范围外脚本），两次一致才算基线。
 
 3. **What landed**
    Read the top entry of `CHANGELOG.md` and the `Roadmap (0.2 — live in the maintainer's edition)` section of `README.md`. The three pieces and the 2026-11-09 live replay are listed there.
