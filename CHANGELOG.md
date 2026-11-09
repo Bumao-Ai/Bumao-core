@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.2.3 — 2026-11-09
+
+运行层与打包订正版：装上就完整、目标按真实位置判、账本可并发写。
+
+**改了什么**
+- 打包：`pyproject.toml` 改为自动发现 `bumao_core` 子包，显式声明包数据（`HOST_CONTRACT.md`、`jiancha/*.json`、`jiancha/schema/*.json`），并新增 `MANIFEST.in`。此前 wheel 只含顶层 `bumao_core`，`pip install` 后没有 `bumao_core/jiancha/`，也没有 `jiancha_canshu.json` 与 `schema/reason_codes.json`，导入运行层直接报错。现在 wheel 与 sdist 都含 `jiancha/` 全部源码与两个 JSON。
+- 目标路径：`scope.target_abs()` 改为按真实路径（`realpath`）校验；目标不存在时按最近已存在父目录的真实路径判定。符号链接／目录联结指向 workspace 外一律拒绝，悬空链接或真实位置判不出时一律拒绝执行（fail-closed）。
+- 拒绝区：`scope.denied()` 不再跳过无法规范化的拒绝区。`denied_zones` 不是列表、或其中任一项形态非法，装载期即判配置错误 `DENIED_ZONES_INVALID` 并拒绝执行；运行期同判一律按不放行处理。
+- 账本：`ActionLedger` 增加跨进程写锁（Windows `msvcrt.locking`／POSIX `fcntl.lockf`），「读末端→写行→fsync→写锚」整段在锁内。每轮末端哈希另写独立锚点文件（fsync 后原子替换），`verify()` 在链校验后同时比对锚点行数与末行哈希。
+- `schema/reason_codes.json` 新增 `DENIED_ZONES_INVALID`（stage=load）、`TARGET_UNRESOLVABLE`（stage=action）。
+- 新增测试：`test_jiancha_scope.py`（链接逃逸／路径穿越／拒绝区非法配置／过期与非法授权单）、`test_jiancha_ledger.py`（多进程并发写／锚点篡改／进程强杀后恢复）、`test_jiancha_recovery.py`（意外退出后恢复／恢复失败／回滚失败）。
+
+**验了什么**
+- wheel：内容含 `bumao_core/jiancha/` 9 个 `.py` 与 `jiancha_canshu.json`、`schema/reason_codes.json`，无 `.bak`；干净 venv `pip install` 后导入成功（`__version__=0.2.3`，码表 34 个码），`selftest --kernel` 6/6 rc=0。
+- `test_jiancha_scope.py` ALL PASS rc=0；`test_jiancha_ledger.py` ALL PASS rc=0（6 进程 × 12 条并发写，72 条无丢失，锚点一致）；`test_jiancha_recovery.py` ALL PASS rc=0。
+- `selftest --kernel` 6/6 rc=0；`contract_test.py` 12 项 0 FAIL，0 SKIP，3 N/A，rc=0；四个内核单测与 `test_jiancha_loader.py` rc=0。
+- 全新解包 0.2.3 发布件复跑：`selftest --kernel` 6/6 rc=0、`contract_test.py` 12 项 0 FAIL rc=0。
+
 ## 0.2.2 — 2026-11-09
 
 0.2 的定型版：在 0.2.1 基础上补装载器、对齐文档与契约，并修掉 0.2.1 露出的装载缺口。

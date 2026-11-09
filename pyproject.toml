@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bumao-core"
-version = "0.10"
+version = "0.2.3"
 description = "Stdlib-only rule-execution kernel: one rule set in, one deterministic verdict out."
 readme = "README.md"
 requires-python = ">=3.8"
@@ -20,7 +20,15 @@ classifiers = [
 Homepage = "https://github.com/Bumao-Ai/Bumao-core"
 
 [tool.setuptools]
-packages = ["bumao_core"]
+license-files = ["LICENSE", "NOTICE"]
+
+[tool.setuptools.packages.find]
+include = ["bumao_core*"]
+namespaces = false
 
 [tool.setuptools.package-data]
-bumao_core = ["HOST_CONTRACT.md"]
+bumao_core = [
+    "HOST_CONTRACT.md",
+    "jiancha/*.json",
+    "jiancha/schema/*.json",
+]

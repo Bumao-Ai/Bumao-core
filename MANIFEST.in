@@ -1,0 +1,15 @@
+include README.md
+include CHANGELOG.md
+include LICENSE
+include NOTICE
+include pyproject.toml
+
+# 内核包：全部子包源码 + 随包参数件与码表（JSON 必须随 wheel/sdist 一起走）
+recursive-include bumao_core *.py *.md
+include bumao_core/HOST_CONTRACT.md
+recursive-include bumao_core/jiancha *.json
+
+# 不带任何备份件与字节码
+global-exclude *.py[cod]
+global-exclude *.bak_*
+global-exclude __pycache__
