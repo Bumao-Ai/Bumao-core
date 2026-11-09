@@ -48,7 +48,7 @@ Two symbols are host-supplied: `my_rules_db` (your rules module) and `my_gate` (
 
 Subcommands: `whoami` (`--full`), `check` (`--strict`, `--quick`), `audit`, `bump`, `show <clause-id>`, `selftest` (`--kernel`), `refresh`.
 
-- `check --quick` runs the A-section structural gates only; it skips the host-injected B/Z gates, the anti-shrink reconciliation and the check-credential write, and its verdict line says it cannot replace `check --strict`.
+- `check --quick` runs the A-section structural gates only; it skips the host-injected B/Z gates, the anti-shrink reconciliation and the check-credential write. Its verdict line says it cannot replace `check --strict` in both branches: `[结论] ALL PASS（quick：仅 A 段 N 项，B/Z 段未跑）—— 不能替代 check --strict` on pass, and `FAIL (…；quick 仅 A 段，B/Z 未跑 —— 不能替代 check --strict)` on fail.
 - `--strict` is a legacy-compatible flag: every FAIL already returns a non-zero exit code, so it does not change any judgement.
 - `whoami --full` appends four diagnostic lines; without it the output is byte-identical to earlier versions.
 
