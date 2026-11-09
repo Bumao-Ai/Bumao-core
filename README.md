@@ -186,3 +186,174 @@ assets/                official logos
 - Trademark boundary: [`TRADEMARK.md`](TRADEMARK.md)
 
 Copyright 2026 Bumao
+
+---
+
+# Bumao Core（中文）
+
+状态：维护暂停，稳定可用
+
+![license](https://img.shields.io/badge/license-Apache--2.0-blue)
+![python](https://img.shields.io/badge/python-3.12%2B-blue)
+![gates](https://img.shields.io/badge/gate%20templates-13-brightgreen)
+![runtime](https://img.shields.io/badge/runtime-stdlib%20only-informational)
+
+> **两个版本空间** — `kernel_contract.json` 声明的内核版本是 `0.10`；仓库 tag 是另一个编号空间：最新稳定 tag 是 `v0.12`，最新发布是 `v0.2.2`，`v0.2.1` 已跳过。两者是独立编号，不是同一个数字。
+>
+> **冷启动** — 恢复迭代从 [`RETURN_HERE.md`](RETURN_HERE.md) 开始。
+
+面向 AI 代理的、只用标准库的规则执行内核：一份写下来的规则集进去，一个确定的 `ALL PASS` / `FAIL` 结论出来——而且这个结论无法被悄悄放宽。
+
+**是什么** — 一个内核，不是框架；本身不含任何具体规则。
+**给谁用** — 要自己搭宿主、但想复用同一套判定逻辑的开发者。
+**解决什么** — 同一份规则集在不同实现里被判出不同结论。
+
+![内核自检](docs/screens/selftest.png)
+*真实输出：`test_check_rc.py` 加随包的 `bumao_core/` 目录树。终端截取，非模拟界面。*
+
+## 快速开始（30 秒）
+
+```bash
+git clone -b v0.12 https://github.com/Bumao-Ai/Bumao-core.git
+cd Bumao-core
+python bumao_core/test_check_rc.py     # 冒烟测试，输出 PASS
+```
+
+然后把它接进你自己的宿主。下面的片段在仓库根目录运行；其中两个符号由你提供，已标 `# replace`：
+
+```python
+import sys
+sys.path.insert(0, "bumao_core")                  # 相对仓库路径，无需改动
+import engine as core
+
+core.configure(rules_db_module=my_rules_db)       # 把 my_rules_db 换成你的规则模块
+core.register("B1", my_gate, "my first gate")     # 把 my_gate 换成你的闸门函数
+core.set_expected("MyEdition", frozenset(["B1"])) # 防收缩基线
+raise SystemExit(core.main(["check", "--strict"]))# 退出码即结论
+```
+
+宿主提供的两个符号：`my_rules_db`（你的规则模块）与 `my_gate`（你的闸门函数）。片段里其余部分可原样复制。
+
+子命令：`whoami`（`--full`）、`check`（`--strict`、`--quick`）、`audit`、`bump`、`show <clause-id>`、`selftest`（`--kernel`）、`refresh`。
+
+- `check --quick` 只跑 A 段结构闸门；跳过宿主注入的 B/Z 段闸门、防收缩核对与检查凭据写入。其结论行在通过／失败两支都写明不能替代 `check --strict`：通过时是 `[结论] ALL PASS（quick：仅 A 段 N 项，B/Z 段未跑）—— 不能替代 check --strict`，失败时是 `FAIL (…；quick 仅 A 段，B/Z 未跑 —— 不能替代 check --strict)`。
+- `--strict` 是兼容旧用法的开关：任何 FAIL 本来都返回非零退出码，所以它不改变任何判定。
+- `whoami --full` 追加四行诊断信息；不加时输出与早期版本逐字相同。
+
+**运行层（0.2.1 起随包，0.2.2 加装载器）** — `bumao_core/jiancha/` 随包提供执行中监管（supervisor、动作台账、范围判定、原因码、清理）。默认关闭：除非 `BUMO_JIANCHA_MODE` 是 `shadow` 或 `enforce`，否则 `bumao_core.jiancha.loader.load_if_enabled()` 返回 `None`；未设、`off`、未知值都不会加载它。`engine.py` 不导入它，也不改变任何内核结论。宿主布局适配器（`personal_adapter.py`、`gate_check.py`）在裸克隆里不起作用。
+
+## 自检：内核 vs 宿主
+
+两个入口，刻意分开——内核那个不需要宿主：
+
+```bash
+python -m bumao_core.engine selftest --kernel   # 内核自检，无需 rules_db
+python -m bumao_core.engine selftest            # 宿主集成；未 configure() 时打印
+                                                # "内核自检需宿主注入规则库（rules_db）…" 并以 2 退出
+python contract_test.py                         # 完整的治理契约测试
+```
+
+`selftest --kernel` 检查六件事：引擎可导入、CLI 解析器（7 个子命令、无重复注册）、`Out` 计数、防收缩往返、`gate_registry` 可导入并给出 A10 结论、`rules_db` 缺失时的显式报错。
+
+## 作为包安装（可选）
+
+```bash
+pip install -e .
+python -c "from bumao_core import engine; print(engine.build_parser().prog)"
+```
+
+两种加载方式对同一份文件都有效：`pip install -e .` 加 `from bumao_core import engine`，或历史上的 `sys.path.insert(0, "bumao_core")` 加 `import engine`。`pyproject.toml` 只声明打包，不增加运行时依赖（只用标准库）。
+
+## 工作留痕
+
+| 项 | 实测值 | 取值来源 |
+|---|---|---|
+| `v0.2.2` 处的提交数 | 18 | `git rev-list --count v0.2.2` |
+| 最近提交 | 2026-11-09 | `git log -1 --date=short` |
+| 检查项 | 13 个闸门模板 | `bumao_core/bumao_core_gates.py`（`make_*_gate`） |
+| 随包测试 | `test_check_rc.py` · `test_build_parser.py` · `test_a10_policy.py`（7/7） · `test_gate_registry.py` | `python bumao_core/<test>.py` |
+| 缺陷台账 | 本仓不设 | — |
+| 发布 | 11 个 tag，`v0.1` → `v0.2.2`，均为 2026-11 | `git tag` |
+| 变更记录 | [CHANGELOG.md](CHANGELOG.md) | — |
+
+## Roadmap（0.2 — 进行中）
+
+三块在推进中（第 2 项已随仓提供）。`v0.2.0-beta.3` 改动了内核运行时：闸门 `A10` 现在返回显式的 `PASS`/`DENY` 结论，而不再是「台账未找到」的提示；`gate_registry.py` 增加 `GateRegistry` 类。本仓的契约自检为绿。
+
+1. **执行前约束** — 动手前先声明意图；意图在执行动作前被审。已接入个人端的 MCP `file_write` 路径：`path` 与 `intent` 在派发前走 L3 审查。**默认关闭** — 没有启动器会拉起 MCP 服务，不启动就不会拦截任何写入。beta.3 的受控留证：范围内写入放行；越界写入被拒且目标文件前后 SHA-256 不变。未接入内核自身的 `check --strict` 路径。*（进行中）*
+2. **执行中监管** — 在动作进行过程中持续检查，而不只在结束时判一次。截至 0.2.2，运行层以 `bumao_core/jiancha/` 随仓提供；仍**默认关闭**，未接入 live 路径。*（已随包，默认关闭）*
+3. **执行后审计** — 把操作、依据、结果、例外串成一条可追溯链。已接入个人端（`ledger.py shenji`）。*（进行中）*
+
+状态：**进行中** — 执行前意图已在个人端接入且默认关闭；执行中监管随 `bumao_core/jiancha/` 提供但仍默认关闭；内核自身的 check 路径未改动。
+
+## 架构
+
+（图示沿用上方 mermaid 流程：宿主应用 → 端包装 → `engine.py` → `gate_registry.py` / `bumao_core_gates.py`（13 个模板）→ 期望集合是否匹配 → `ALL PASS` 或 `FAIL`。）
+
+## 检查什么
+
+| 域 | 模板数 | 举例 |
+|---|---|---|
+| 规则源结构 | 6 | 章数、ID 唯一、块连续、缺键、空条款、断引用 |
+| 渲染视图 | 2 | 视图漂移、渲染幂等 |
+| 仓库布局 | 2 | 根文件不平铺、子目录命名 |
+| 卫生 | 3 | 个人信息／路径扫描、陈旧锁、版本号语法 |
+
+合计 13 个闸门模板。宿主提供规则集与闸门函数；内核提供契约、注册表与结论。
+
+## 目录
+
+```text
+bumao_core/
+  engine.py            唯一运行时引擎
+  gate_registry.py     闸门注册表、防收缩核对、显式 A10 结论
+  gate_count.py        三套口径的闸门计数
+  bumao_core_gates.py  13 个可复用闸门模板
+  bumao_core_rules.py  参考装载器（参考实现，不参与运行时）
+  host_reference.py    最小宿主骨架（仅 GateRegistry）
+  jiancha/             执行中监管运行时（0.2.2 起，默认关闭）
+    supervisor.py      中断／恢复／停机状态机
+    ledger.py          追加式动作台账（哈希链）
+    scope.py           范围内／范围外与冻结区解析
+    reasons.py         原因码查询
+    qingli.py          证据与基线留存清理
+    personal_adapter.py 宿主布局适配器（裸克隆中不起作用）
+    gate_check.py      宿主闸门 A/B 自检（仅宿主布局）
+    jiancha_canshu.json 运行时参数
+    schema/reason_codes.json 原因码，含 RESTORE_FAILED
+  __init__.py          `pip install -e .` 的包入口
+  test_check_rc.py     退出码回归
+  test_build_parser.py CLI 解析器回归（重复子命令缺陷）
+  test_a10_policy.py   A10 结论用例（DENY / PASS）
+  test_gate_registry.py 注册表增删回归
+  test_equivalence.py  引擎等价性回归
+  HOST_CONTRACT.md     宿主必须实现的 12 个成员
+examples/
+  minimal_host.py      独立第三方接入样例（无需任何端）
+kernel_contract.json   冻结的接口契约（由 A10 读取，位于 bumao_core/ 上一层）
+contract_test.py       契约自检
+pyproject.toml         仅打包（pip install -e .），无运行时依赖
+30_taizhang/
+  shenpi_jilu.txt      审批台账结构模板（A10 输入；零条目 → DENY）
+assets/                官方徽标
+```
+
+`kernel_contract.json` 必须待在 `bumao_core/` 的**上一层**（本仓是仓库根，各端是 `kernel/`）。这就是 `engine.py` 读取的路径；没有它，闸门 `A10` 会以 `FileNotFoundError` 失败。
+
+## 状态与已知问题
+
+- `contract_test.py` 为绿：`12 项，0 FAIL，0 SKIP，3 N/A`。三条 N/A 是仅供内部使用的模块（`facts.py`、`facts_check.py`、`portability_probe.py`），在 `HOST_CONTRACT.md §十` 中声明为**契约范围之外**——它们不是可选依赖，结果也不再是「跳过」。核心文件缺失仍然算 FAIL。
+- 本仓的 `check --strict` 是 `1/12` 红：`A10` 按设计为 `DENY`（随包台账条目不满足 L2 的当日规则）。`A13` 首次运行播种基线，之后通过。在已存在 A13 基线的工作树里，改动核心文件而当日没有审批条目，`A13` 按设计转红。
+- `bumao_core/gate_count.py` 与 `bumao_core/test_equivalence.py` 需要 `<HX>/kernel/bumao_core` 布局、且三端同级检出。不在该布局下时它们打印 `需要三端同级检出` 并以 `2` 退出——既不是 PASS 也不是 FAIL，所以单仓克隆不会报出假绿或误导性的红。
+- `python examples/minimal_host.py` 在没有任何端的情况下跑一次真实检查。它的 `check` 退出码是 `1`，因为样例不随附审批台账，`A10` 按设计为 `DENY`；脚本会显式打印这一点。
+- `bumao_core/jiancha/` 是 0.2.1 起随包提供的执行中监管运行时，0.2.2 起带装载器。除非 `BUMO_JIANCHA_MODE` 是 `shadow` 或 `enforce`，否则保持关闭；`engine.py` 不导入它。`personal_adapter.py` 与 `gate_check.py` 依赖宿主目录布局。
+
+## 文档与许可
+
+- 宿主契约：[`bumao_core/HOST_CONTRACT.md`](bumao_core/HOST_CONTRACT.md)
+- 参与贡献：[`CONTRIBUTING.md`](CONTRIBUTING.md) · DCO：[`DCO`](DCO)
+- 安全策略：[`SECURITY.md`](SECURITY.md)
+- 许可：Apache-2.0，见 [`LICENSE`](LICENSE)
+- 商标边界：[`TRADEMARK.md`](TRADEMARK.md)
+
+Copyright 2026 Bumao
