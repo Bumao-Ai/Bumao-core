@@ -27,6 +27,15 @@
 
 建议使用 `feat:` / `fix:` / `docs:` / `refactor:` / `test:` / `chore:` 前缀，正文说明「为什么改」，不要只写「改了什么」。
 
+## 发版清单（维护者）
+
+每次发版必须逐条核对，全部成立才算发完：
+
+- 版本号一致：`pyproject.toml`、`bumao_core/__init__.py`、`CHANGELOG.md` 与 tag 同号。
+- 自检原样通过：`contract_test.py` 与 `selftest --kernel` 给出原始输出与 rc。
+- 资产三处哈希一致：本地包、线上资产与 `SHA256SUMS`；并全新解包复跑。
+- Release 正文中英双侧齐全：同一篇正文中文在前、英文在后（或分「中文／English」两段），英文须与中文逐条对应，不得只给摘要。正文只有一侧的，不算发完。
+
 ## DCO（开发者来源证书）
 
 本项目采用 DCO 1.1。每个提交必须包含签署行：
@@ -42,3 +51,59 @@ Signed-off-by: 你的名字 <你的邮箱>
 - 对事不对人，技术分歧用证据和可复现的实验解决。
 - 不提交他人的隐私数据；发现泄露请按 `SECURITY.md` 的渠道报告。
 - 维护者有权拒绝不符合本项目边界（纯标准库、无具体私有规则、无部署信息）的改动。
+
+---
+
+# Contributing（English）
+
+Thank you for wanting to take part in the Bumao project.
+
+## Before you start
+
+- Open an Issue first: state the problem you want to solve, the expected result and how to reproduce it. For larger changes, get maintainer confirmation first so the work is not wasted.
+- The runtime uses the **Python standard library only** and adds no third-party dependencies. Before submitting, confirm your `import`s add no third-party package.
+- Do not commit local paths, drive letters, user names, hostnames, email addresses, logs, backup files (`.bak*`) or any personal data.
+- One commit does one thing; do not mix formatting, refactoring and feature changes in the same PR.
+
+## Submission flow
+
+1. Fork the repository and create a branch from `main`.
+2. Make the change and run the self-check locally:
+   - kernel repository: `python -m compileall bumao_core`
+   - edition repository: `cd 10_rac && python <entry script> check --strict`
+3. Sign off on each commit with the DCO:
+
+   ```
+   git commit -s -m "fix: brief description"
+   ```
+
+4. Open a Pull Request stating the motivation, the scope of the change, the verification command and its result.
+
+## Commit messages
+
+Suggested prefixes: `feat:` / `fix:` / `docs:` / `refactor:` / `test:` / `chore:`. The body explains *why* the change is made, not only what changed.
+
+## Release checklist (maintainers)
+
+Every release must be checked item by item; it counts as released only when all of them hold:
+
+- Version numbers agree: `pyproject.toml`, `bumao_core/__init__.py`, `CHANGELOG.md` and the tag carry the same number.
+- Self-checks pass unchanged: raw output and rc are recorded for `contract_test.py` and `selftest --kernel`.
+- Asset hashes agree in all three places: local package, online asset and `SHA256SUMS`; then re-run from a fresh unpack.
+- The release body is complete in both Chinese and English: within one body, Chinese first and English after (or as separate "中文 / English" sections), and the English must correspond item by item to the Chinese, not a summary. A body with only one side does not count as released.
+
+## DCO (Developer Certificate of Origin)
+
+This project uses DCO 1.1. Every commit must carry a sign-off line:
+
+```
+Signed-off-by: Your Name <your email>
+```
+
+`git commit -s` appends it automatically. The full DCO text is in `DCO` at the repository root.
+
+## Code of conduct
+
+- Argue about the work, not the person; settle technical disagreements with evidence and reproducible experiments.
+- Do not submit other people's private data; if you find a leak, report it through the channel described in `SECURITY.md`.
+- Maintainers may decline changes outside this project's boundary (standard library only, no specific private rules, no deployment information).

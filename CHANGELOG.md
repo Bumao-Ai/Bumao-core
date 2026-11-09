@@ -1,5 +1,7 @@
 # Changelog
 
+> 发版流程：每次发版，Release 正文必须中英双侧齐全（中文在前、英文在后，英文逐条对应，不得只给摘要）；只有一侧不算发完。核对项见 `CONTRIBUTING.md`「发版清单（维护者）」。
+
 ## 0.2.4 — 2026-11-09
 
 A10 授权闸三态版：授权按「变更当日」判，跨版本轴的比对去掉。
@@ -160,3 +162,168 @@ Not shipped yet (do not count as done): `runtime_preflight.py`, the second batch
 - 防缩水：`set_expected()` 声明期望集，少注册一个闸门即失败。
 - 三口径闸数统计与新旧引擎等价性回归。
 - 宿主契约文档 `bumao_core/HOST_CONTRACT.md`。
+
+---
+
+## English
+
+> Release process: every release body must be complete in both Chinese and English (Chinese first, English after, item-by-item correspondence, not a summary); one side alone does not count as released. See "Release checklist (maintainers)" in `CONTRIBUTING.md`.
+
+### 0.2.4 — 2026-11-09
+
+A10 authorization gate, three-state edition: authorization is judged by the day of change, and the cross-version-axis comparison is removed.
+
+**What changed**
+- A10 criteria become three-state: the contract's `core_version` unchanged since the last authorization (`updated_at` earlier than the most recent authorization entry's date) → PASS; changed (`updated_at` not earlier than the latest authorization date) → PASS if there is an authorization entry on the day of change, DENY if not; undeterminable (contract missing a field, `updated_at` invalid, approval ledger unreadable or with no parseable authorization entry) → DENY.
+- The old implementation treated "no approval ledger" directly as "unauthorized change", and compared the contract version number against the version number of another version axis in the approval ledger, so legitimate packages were permanently red; the new criteria look only at whether there is an authorization on the change date and no longer compare versions across axes.
+- Contract `meta.updated_at` changed from 2026-11-07 to 2026-11-09, and authorization entry No. 24 is registered in the approval ledger the same day.
+- `test_a10_policy.py` switches to three-state cases: unchanged PASS, changed without authorization DENY, changed with authorization PASS, undeterminable DENY, plus two cases using real file paths.
+
+**What was verified**
+- `test_a10_policy.py` 10/10, rc=0. Real contract and approval ledger: `A10 判定=PASS ｜ 三态=changed ｜ 变更当日（2026-11-09）有授权条目`.
+- `selftest --kernel` 6/6, rc=0; `contract_test.py` 12 items, 0 FAIL, 0 SKIP, 3 N/A, rc=0.
+- `test_build_parser.py` / `test_gate_registry.py` / `test_check_rc.py` / `test_jiancha_loader.py` / `test_jiancha_scope.py` / `test_jiancha_ledger.py` / `test_jiancha_recovery.py` all rc=0.
+- Fresh unpack of the 0.2.4 release artifact, re-run: `selftest --kernel` 6/6 rc=0, `contract_test.py` 12 items, 0 FAIL, rc=0.
+
+### 0.2.3 — 2026-11-09
+
+Runtime-layer and packaging correction release: complete on install, targets judged by their real location, and the ledger can be written concurrently.
+
+**What changed**
+- Packaging: `pyproject.toml` now auto-discovers the `bumao_core` subpackages and explicitly declares package data (`HOST_CONTRACT.md`, `jiancha/*.json`, `jiancha/schema/*.json`), plus a new `MANIFEST.in`. Previously the wheel contained only top-level `bumao_core`; after `pip install` there was no `bumao_core/jiancha/`, and no `jiancha_canshu.json` or `schema/reason_codes.json`, so importing the runtime layer failed immediately. Both the wheel and the sdist now contain all `jiancha/` source and the two JSON files.
+- Target paths: `scope.target_abs()` now validates against the real path (`realpath`); when the target does not exist, the decision uses the real path of the nearest existing parent directory. Symlinks / directory junctions pointing outside the workspace are always rejected; dangling links or a real location that cannot be determined always reject execution (fail-closed).
+- Denied zones: `scope.denied()` no longer skips denied zones that cannot be normalized. If `denied_zones` is not a list, or any entry has an invalid shape, load time immediately reports the configuration error `DENIED_ZONES_INVALID` and rejects execution; at runtime the same finding is always treated as not allowed.
+- Ledger: `ActionLedger` gains a cross-process write lock (Windows `msvcrt.locking` / POSIX `fcntl.lockf`), with the whole "read tail → write line → fsync → write anchor" sequence inside the lock. Each round's tail hash is also written to a separate anchor file (atomically replaced after fsync), and `verify()` compares anchor line count and tail hash after the chain check.
+- `schema/reason_codes.json` adds `DENIED_ZONES_INVALID` (stage=load) and `TARGET_UNRESOLVABLE` (stage=action).
+- New tests: `test_jiancha_scope.py` (link escape / path traversal / invalid denied-zone configuration / expired and invalid authorization tickets), `test_jiancha_ledger.py` (multi-process concurrent writes / anchor tampering / recovery after a process kill), `test_jiancha_recovery.py` (recovery after an unexpected exit / recovery failure / rollback failure).
+
+**What was verified**
+- wheel: contents include the 9 `.py` files under `bumao_core/jiancha/`, `jiancha_canshu.json` and `schema/reason_codes.json`, with no `.bak`; a clean venv `pip install` then imports successfully (`__version__=0.2.3`, 34 codes in the table), and `selftest --kernel` is 6/6 rc=0.
+- `test_jiancha_scope.py` ALL PASS rc=0; `test_jiancha_ledger.py` ALL PASS rc=0 (6 processes × 12 concurrent writes, 72 lines with none lost, anchors consistent); `test_jiancha_recovery.py` ALL PASS rc=0.
+- `selftest --kernel` 6/6 rc=0; `contract_test.py` 12 items, 0 FAIL, 0 SKIP, 3 N/A, rc=0; the four kernel unit tests and `test_jiancha_loader.py` rc=0.
+- Fresh unpack of the 0.2.3 release artifact, re-run: `selftest --kernel` 6/6 rc=0, `contract_test.py` 12 items, 0 FAIL, rc=0.
+
+### 0.2.2 — 2026-11-09
+
+The finalized 0.2 release: on top of 0.2.1 it adds the loader, aligns docs and contract, and closes the loading gap exposed by 0.2.1.
+
+**What changed**
+- New `bumao_core/jiancha/loader.py`: `mode()` reads `BUMO_JIANCHA_MODE`, accepting only `off` / `shadow` / `enforce`; unset, empty string and unknown values all map to `off`. `is_enabled()` and `load_if_enabled()` return accordingly; when disabled they return `None`, and only when enabled is `supervisor` imported lazily. This closes 0.2.1's "package only, no loader" gap.
+- New `bumao_core/test_jiancha_loader.py`: covers the six states unset / empty string / unknown value / `off` / `shadow` / `enforce`, plus both disabled and enabled load returns.
+- Recovery-failure behaviour is defined as "halt and wait for a human": if a baseline copy is missing, or the hash after write-back does not match the baseline, each item is recorded in `failed`, the whole round is recorded as `recovery=fail`, a `RuntimeError` is raised, and `recovered` is not set; already-recovered items are kept and there is no `partial` state.
+- Docs and contract aligned: README and `HOST_CONTRACT.md §十一` now state "disabled by default + loader semantics" instead of "the host just imports it itself"; README line 175 `the shipped ledger's single entry` is corrected to `entries` (the bundled approval ledger has two historical entries).
+
+**What was verified**
+- `test_jiancha_loader.py`: six states plus two load cases all PASS, rc=0.
+- `selftest --kernel` 6/6, rc=0; `contract_test.py` 12 items, 0 FAIL, rc=0; the four kernel unit tests rc=0.
+- Fresh unpack of the 0.2.2 release artifact, re-run: `selftest --kernel` 6/6 rc=0, `contract_test.py` 12/0 rc=0.
+
+### 0.2.1 — 2026-11-09
+
+**What changed**
+- Runtime layer bundled: `bumao_core/jiancha/` adds `supervisor.py`, `ledger.py`, `scope.py`, `reasons.py`, `qingli.py`, `personal_adapter.py`, `gate_check.py`, `jiancha_canshu.json`, `schema/reason_codes.json` and `__init__.py`. All imports inside the package are relative and do not shadow host modules of the same name (the host's `10_rac/ledger.py` is a different ledger). `engine.py` does not import it, so kernel verdicts are unaffected.
+- Fixed the `recover_restore` failure path: if a baseline copy is missing, or the hash after write-back does not match the baseline, each item is recorded in `failed`, the whole round is recorded as `recovery=fail`, a `RuntimeError` is raised, and `recovered` is not set. Previously such items were silently skipped and recorded as `result=ok`.
+- `schema/reason_codes.json` adds `RESTORE_FAILED` (stage=action, ticket=true).
+- Docs: README and `HOST_CONTRACT.md` add the "includes runtime layer" note and directory tree; the missing 0.2.0 entry is recorded.
+
+**What was verified**
+- `selftest --kernel` 6/6, rc=0; `contract_test.py` 12 items, 0 FAIL, rc=0; `bumao_core/jiancha` imports usable.
+- Live-zone drill: recovery success path (2 items recovered, 1 quarantined, in_scope items kept, chain unbroken); missing baseline copy → `RESTORE_FAILED` + `recovery=fail` + raise + `RECOVERED=False`; `periodic_check` passes two cycles, the third cycle reports `EXTERNAL_DRIFT` and the guard refuses to halt; `qingli` 17→15 items, deletion list matches the plan item by item, evidence bundle keeps 10 copies.
+
+**Still missing**
+- The runtime layer has only a package and no loader: the host must `import bumao_core.jiancha` itself, there is no `BUMO_JIANCHA_MODE` switch, and `personal_adapter.py` / `gate_check.py` only fit the host layout.
+- The semi-success recovery semantics option is not implemented: it is currently "halt and wait for a human" (any failure aborts the round, already-recovered items are kept); there is no "continue recovering the rest" and no `partial` state.
+- community credential `check_last.json` lost: the deletable surface has been located, but that specific occurrence has not been identified.
+- community `4/44` only pinned to trigger conditions: with the credential missing (baseline present) `3/44` is reproduced (A10+B19+B22); with the credential present but expired `4/44` is reproduced (A10+B16+B19+B22); the original occurrence has no per-item record, so it cannot be attributed.
+- The three editions' kernels have not followed: community / minimal `engine.py` is still `7bd00e2cd72d` (this repo's is `c49b8e9ea198`) and still lacks `host_reference.py` / `test_a10_policy.py` / `test_gate_registry.py`; personal has no `kernel/bumao_core`.
+- The community approval ledger has not been created; its A10 / A13 are still known standing gaps.
+
+### 0.2.0 — 2026-11-09
+
+Back-filled (this entry was previously missing).
+
+- Fixed the A13 cross-drive `relpath`: relative paths are computed only on the same drive; on different drives the item is skipped as an "outside-area-root entry" with the item count stated in the verdict reason, and `ValueError: path is on mount ...` is no longer raised; same-drive verdicts are unchanged.
+- The `--quick` FAIL conclusion line now states "quick covers only section A; B/Z were not run — this cannot replace check --strict".
+- The `minimal_host.py` comment now reflects measurement (A10 + A13, `FAIL (2/13)`); the README wording now holds for both branches.
+- Verified: `contract_test.py` 12 items, 0 FAIL; `selftest --kernel` 6/6; three-gate live-zone drill; `test_build_parser.py`.
+- Asset `bumao-core-0.2.0.zip`: 923889 B, SHA-256 `071ca5277c16d93fd8871958bfb9a5c37784beed09224b3b8afb6b038b035f0a`.
+
+### 0.2.0-beta.5 — 2026-11-09
+
+The fifth beta of 0.2 — the last release of this phase; active iteration pauses for about a month. This release lands the fixes queued in the working tree and actually ships the three parameters that the previous release only promised in documentation.
+
+- **Fix duplicate registration in `build_parser()`**: the old code called `sub.add_parser("check")` twice, so calling `build_parser()` raised `argparse.ArgumentError: conflicting subparser: check` (beta.3 / beta.4 both hit this). Now it registers once only, and `main()` reuses the same parser instead of building a second one. Regression test `bumao_core/test_build_parser.py` (4 items).
+- **`--quick` actually works**: runs only the section A structural gates, skipping sections B/Z, the shrink-guard reconciliation and the check-credential write; the conclusion line explicitly says "cannot replace check --strict", instead of saying so only in the docs.
+- **`--full` actually works**: `whoami --full` appends 4 lines — kernel path, Python version, rules directory, subcommand list; without `--full` the output is byte-for-byte identical to historical versions.
+- **`selftest --kernel` actually works**: reads no host rule base and writes no host ledger; 6 items (engine importable / CLI 7 subcommands without duplicates / Out counts / shrink-guard round trip / gate_registry importable and A10 judgeable / guard not injected). Without `--kernel` it is the host integration self-check, which prints the reason and returns 2 when `rules_db` is not injected.
+- **Two loading modes coexist**: adds `pyproject.toml` and `bumao_core/__init__.py`, so `from bumao_core import engine` works after `pip install -e .`; the historical `sys.path.insert` + `import engine` keeps working. Kernel-internal imports support both relative and flat imports (`_import_gate_registry()`). `pyproject.toml` declares packaging only, with no runtime dependency (still stdlib only).
+- **New `examples/minimal_host.py`**: does not depend on the three product repos; copy it and it runs one real check. The example ships no approval ledger, so A10 verdicts DENY and `check` exits with 1 — this is the kernel refusing by default, not the example failing, and the script says so.
+- **`bumao_core_rules.py` classified as a reference implementation**: zero references in the kernel and in all three editions, and it does not satisfy the host's 12-member contract, so it must not be passed directly to `configure()`; the docs now carry an explicit warning instead of only calling it "unwired dead code".
+- **Measured**: `contract_test.py` `12 items, 0 FAIL, 0 SKIP, 3 N/A` (rc=0); `test_build_parser.py` 4/4; `test_a10_policy.py` 7/7; `test_gate_registry.py` 7/7; `selftest --kernel` 6/6.
+- **Known reds (design behaviour, not relaxed)**: `check` in `python examples/minimal_host.py` is `FAIL (2/13 gates red)` — `A10` (zero entries in the bundled approval ledger → policy `deny` → DENY) and `A13` (a baseline already exists on this machine and there is no authorization entry for the day → changed without authorization). On a freshly unpacked artifact's first run, A13 is first taken into the baseline and then passes, leaving only A10. To turn A10 into `PASS`, only the user can write a same-day authorization entry into `30_taizhang/shenpi_jilu.txt`; the bundled artifact does not contain one.
+- **Not done**: the three product editions' `kernel/bumao_core/` are out of this repo's scope; `gate_count.py` / `test_equivalence.py` still require the three editions checked out at the same level and exit with code 2 ("undeterminable") on a single-repo clone.
+
+### 0.2.0-beta.4 — 2026-11-09
+
+The fourth beta of 0.2; 0.2 itself is not finished.
+
+- A10 / A13 evidence-lookup correction (verdicts unchanged, still DENY): on a single-repo clone the "area root" was taken as the parent outside the repo, so A10 could not read the bundled approval ledger structure and the reason became "no approval ledger". It now uses "when this repo root contains `30_taizhang`, this repo root is the area root". A10 now reads the `30_taizhang/shenpi_jilu.txt` template and prints `A10 判定=DENY ｜ 审批册里没有可解析的【第 N 号】条目`.
+- `find_approval_ledger()` no longer scans sibling directories. Under the release repos' sibling layout the old implementation read another repo's approval ledger (this time it read `bumao-core`'s template), red for the right reason but wrong cause; the lookup scope is narrowed to the direct ancestors from this level to the root.
+- Bundled artifacts unchanged: `facts.py` / `facts_check.py` / `portability_probe.py` are still judged N/A per `HOST_CONTRACT.md §十`, not via SKIP.
+- Contract self-test `12 items, 0 FAIL, 0 SKIP, 3 N/A`; `test_a10_policy.py` 7/7; `test_gate_registry.py` 7/7.
+- This repo's `check --strict`: `1/12` red (only A10, DENY by design).
+- Not done: turning A10 into `PASS` needs a real same-day authorization entry; on a single-repo clone `gate_count.py` / `test_equivalence.py` exit with code 2 ("undeterminable") and judge neither PASS nor FAIL.
+
+### 0.2.0-beta.3 — 2026-11-08
+
+The third beta of 0.2; 0.2 itself is not finished.
+
+- Contract self-test goes green: `contract_test.py` actually runs `12 items, 0 FAIL, 3 SKIP`, rc=0. `host_reference.py` / `test_gate_registry.py` ship (sanitized, no local absolute paths); `facts.py` / `facts_check.py` / `portability_probe.py` become explicit optional dependencies, and missing files print SKIP with the reason line by line and no longer count as FAIL. `gate_registry.py` gains the `GateRegistry` class (required by `test_gate_registry.py`).
+- A10 becomes judgeable: no approval ledger / no entries / no authorization line for the day / version mismatch → `A10 判定=DENY`, with detail stating that policy `deny` does not allow it; same-day authorization with a matching version → `A10 判定=PASS`. Bundled `30_taizhang/shenpi_jilu.txt` is a structure template (zero entries; public repos always judge DENY). `test_a10_policy.py` actually runs 7 items, 7 PASS.
+- Controlled verification of the intent ticket `enforce` (personal live tree, two independent runs): writes inside approved directories are allowed and land on disk; writes outside approved directories are rejected (`不在批准目录/文件集合内`) and the target file's SHA-256 is unchanged before and after; with no environment variable set, `BUMO_JIANCHA_MODE=off` and the adapter returns `None`. It can be enabled, it can block, and it is off by default.
+- Known reds: this repo's `check --strict` is 1/12 red — A10 judging DENY is the designed result (zero-entry template); A13 passes after the first check detects and enrolls the baseline. `gate_count.py` / `test_equivalence.py` still require the three editions checked out at the same level.
+- community `check --strict` once showed `4/44`, **never reproduced, cause unknown**; all 18 re-runs showed the `A10` / `A13` two lines.
+
+### 0.2.0-beta.2 — 2026-11-08
+
+The second beta of 0.2; 0.2 itself is not finished.
+
+- Three-cell status: **pre-execution constraint = wired in, off by default**. personal's MCP write tools declare `intent` along with the action, and the `file_write` payload (`path` + `intent`) enters L3 review before dispatch; it is off by default because no launcher starts the MCP service, and nothing is blocked when it does not start. It is not on the kernel's own `check --strict` path. In-execution supervision is still a design and sandbox prototype; post-execution audit is still wired in for personal.
+- Controlled verification (actually run, not "import and see green"): `test_capability.py` 10 items, 10 PASS / 0 FAIL; `test_pretool_guard.py` 10 items, 10 PASS / 0 FAIL, 5 dangerous calls denied (≥5), 0 false positives; `test_mcp.py` 27 items, 27 PASS / 0 FAIL. Controlled runs: 10/10 capability, 10/10 pre-tool guard (5 dangerous calls denied, 0 false positives), 27/27 MCP routing.
+- The kernel runtime code is unchanged in this release (`bumao_core/` is the same as beta.1); this release is a phase-status and evidence update. Kernel runtime unchanged from `v0.2.0-beta.1`.
+- Docs: README gains `Status: maintenance pause` / 「状态：维护暂停，稳定可用」 at the top; new `RETURN_HERE.md` (look at three things first on return, touch `CHANGELOG.md` first, which switches are off by default).
+- Known issues unchanged: `contract_test.py` 12 items, 2 FAIL (5 modules not shipped); `A10` only hints when the approval ledger is missing and gives no credential; `op_id` closes only at the personal action level; 103 of the 683 rules are machine-judgeable (15.1%), and 89 are bound by the machine; `error_code` is recorded only at rc=3 per the convention.
+- community `check --strict` once showed `4/44`, **never reproduced, cause unknown**; all 18 re-runs showed the `A10` / `A13` two lines.
+
+### 0.2.0-beta.1 — 2026-11-08
+
+The first beta of 0.2; 0.2 itself is not finished.
+
+- Three-cell status: post-execution audit is wired in for personal (four action-row keys, `ledger.py shenji` can export the whole chain); pre-execution constraint and in-execution supervision are still a design and sandbox prototype, **not wired into live**.
+- Docs: README gains the "two version spaces" note (kernel `0.10` and release tags are two independent numbering spaces); the Roadmap is explicitly marked as in progress.
+- No new execution capability; `bumao_core/` runtime code is unchanged in this release.
+- Known issues: `contract_test.py` 12 items, 2 FAIL (5 modules not shipped); `A10` only hints when the approval ledger is missing and gives no credential; `op_id` closes only at the personal action level; 103 of the 683 rules are machine-judgeable (15.1%), and 89 are bound by the machine; `error_code` is recorded only at rc=3 per the convention.
+- community `check --strict` once showed `4/44`, **never reproduced, cause unknown**; all 18 re-runs showed the `A10` / `A13` two lines.
+
+### 0.12 — 2026-11-08
+
+This release aligns wording and structure and ships the kernel contract; it adds no execution capability.
+
+- Before: gate `A10` threw `FileNotFoundError` on a fresh checkout, because `kernel_contract.json` was not in the repository. Now: `kernel_contract.json` and `contract_test.py` ship at the repository root — the exact path `engine.py` reads (one level above `bumao_core/`), so `A10` evaluates the contract and reports the missing approval ledger instead of crashing.
+- Before: the README opened with gate IDs and internal paths. Now: the first screen answers what it is, who it is for and what it solves, English first, Chinese below (`README.md`).
+- Before: no screenshots. Now: one real terminal capture under `docs/screens/` (`test_check_rc.py` output plus the shipped tree).
+- No runtime change: `git diff v0.11..HEAD -- bumao_core/` is empty; `engine.py` bytes are unchanged.
+
+Known issues in this batch (documented in `README.md`, not fixed here): `contract_test.py` reports `2 FAIL` because checks `[B]`/`[C]` expect five modules this repo does not ship; `gate_count.py` and `test_equivalence.py` fail on a single-repo clone because they assume sibling checkouts.
+
+Not shipped yet (do not count as done): `runtime_preflight.py`, the second batch of fake-green patches, and the four foreign keys (`op_id` / `rule_id` / `run_id` / `error_code`).
+
+### 0.1 — 2026-11-08
+
+First public release.
+
+- Unified kernel: `engine.py` as the only runtime engine.
+- 13 generic gate templates and the host injection contract.
+- Shrink guard: `set_expected()` declares the expected set, so failing to register a gate fails the run.
+- Three-convention gate counting and the old-vs-new engine equivalence regression.
+- Host contract document `bumao_core/HOST_CONTRACT.md`.
