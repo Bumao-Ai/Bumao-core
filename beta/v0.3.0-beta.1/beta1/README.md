@@ -1,9 +1,9 @@
 # beta1 —— Bumao Core 0.3 最小可跑骨架
 
 - 性质：沙盒实验件，不参与任何已发布产品
-- 位置：`D:\XJQITA\GCML_lab\v0.3_20261109\beta1`
-- 解释器实测：`D:\XJQITA\HSYX\Python\python.exe`（Python 3.12.4）
-- 运行：`& "D:\XJQITA\HSYX\Python\python.exe" run_beta1.py`
+- 位置：本仓 `beta/v0.3.0-beta.1/beta1/`（即已发 beta.1 包内的 `beta1/`）
+- 解释器实测：Python 3.12.4
+- 运行：`cd beta1; python run_beta1.py`
 - 退出码：0 = 五步链路 + 7 条反向用例全部符合预期且账本链无断点
 
 ## 目录结构
@@ -26,8 +26,8 @@ beta1/
 
 ## 复用（不重写）
 
-- 哈希链账本：`vendor/ledger.py` 与 `D:\XJQITA\GCML_lab\v0.2_261108_jiancha\jiancha\ledger.py`
-  **字节级一致**（SHA256 见本轮报告）。
+- 哈希链账本：`vendor/ledger.py` 与 0.2 早期（2026-11-08）的 `jiancha/ledger.py` 快照
+  **字节级一致**（SHA256 `CFA2BD82DD1AED2BE07799E8CB2A20D371E02146B26A5E11538CABFD764519D8`）；当前 core 仓的 `bumao_core/jiancha/ledger.py` 已在 0.2.3 加固（并发写锁＋锚点），本包未升级到该版。
 - 四外键口径：`op_id`／`run_id`／`rule_id`／`error_code`，与 0.2 票链同名同义。
 - `rule_id` 取值：最先失败项 id；无失败取最后通过项 id（沿用 0.2 `supervisor._rule_id` 规则）。
 
@@ -46,7 +46,7 @@ beta1/
 - 审批人身份未签名，审批结果仅占位字段；
 - 没有并发与锁，单进程顺序跑；
 - 没有把规则审查接到 core 的 `gate_registry` 实例上（复用其口径，未做注册期接线）；
-- 十项验收条件原文未送达，beta1 只覆盖任务明示的五步链路。
+- beta1 编制时十项验收条件原文未送达；原文与逐项现状见 `beta/v0.3.0-beta.4/0.3_jihua_261109.md` §5／§6，beta1 只覆盖任务明示的五步链路。
 ---
 
 # English Version
@@ -54,9 +54,9 @@ beta1/
 # beta1 — the Minimum Runnable Skeleton of Bumao Core 0.3
 
 - Nature: sandbox experimental artifact; does not participate in any released product
-- Location: `D:\XJQITA\GCML_lab\v0.3_20261109\beta1`
-- Interpreter measured: `D:\XJQITA\HSYX\Python\python.exe` (Python 3.12.4)
-- Run: `& "D:\XJQITA\HSYX\Python\python.exe" run_beta1.py`
+- Location: `beta/v0.3.0-beta.1/beta1/` in this repo (that is, `beta1/` inside the published beta.1 package)
+- Interpreter measured: Python 3.12.4
+- Run: `cd beta1; python run_beta1.py`
 - Exit code: 0 = the five-step chain + all 7 negative cases behave as expected and the ledger chain has no break point
 
 ## Directory structure
@@ -79,8 +79,8 @@ beta1/
 
 ## Reuse (no rewriting)
 
-- Hash-chain ledger: `vendor/ledger.py` and `D:\XJQITA\GCML_lab\v0.2_261108_jiancha\jiancha\ledger.py`
-  are **byte-for-byte identical** (see this round's report for the SHA256).
+- Hash-chain ledger: `vendor/ledger.py` is **byte-for-byte identical** to the early 0.2 (2026-11-08) snapshot of `jiancha/ledger.py`
+  (SHA256 `CFA2BD82DD1AED2BE07799E8CB2A20D371E02146B26A5E11538CABFD764519D8`); the current `bumao_core/jiancha/ledger.py` in the core repo was hardened in 0.2.3 (concurrent-write lock + anchor), and this package has not been upgraded to that version.
 - Four foreign keys definition: `op_id` / `run_id` / `rule_id` / `error_code`, with the same names and the same meanings as in the 0.2 ticket chain.
 - `rule_id` value: the id of the first failing item; if nothing fails, the id of the last passing item (following the 0.2 `supervisor._rule_id` rule).
 
@@ -99,4 +99,4 @@ beta1/
 - Approver identity is not signed; the approval result is only a placeholder field;
 - No concurrency or locking; a single process runs sequentially;
 - Rule review is not wired onto core's `gate_registry` instance (its definition is reused, but registration-time wiring is not done);
-- The original text of the ten acceptance criteria was not delivered; beta1 covers only the five-step chain explicitly stated in the task.
+- The original text of the ten acceptance criteria was not delivered when beta1 was prepared; the original text and the item-by-item current state are in `beta/v0.3.0-beta.4/0.3_jihua_261109.md` §5/§6; beta1 covers only the five-step chain explicitly stated in the task.

@@ -1,18 +1,15 @@
 # Bumao Core
 
 Status: maintenance pause
-状态：维护暂停，稳定可用
 
 ![license](https://img.shields.io/badge/license-Apache--2.0-blue)
 ![python](https://img.shields.io/badge/python-3.12%2B-blue)
 ![gates](https://img.shields.io/badge/gate%20templates-13-brightgreen)
 ![runtime](https://img.shields.io/badge/runtime-stdlib%20only-informational)
 
-> **Two version spaces** — the kernel version declared in `kernel_contract.json` is `0.10`; the repository tag is a separate numbering space: the latest stable tag is `v0.12`, the latest release is `v0.2.2`, and `v0.2.1` was skipped. They are independent numbers, not the same number.
-> **两个版本空间** — `kernel_contract.json` 声明的内核版本是 `0.10`；仓库 tag 是另一个编号空间：最新稳定 tag 是 `v0.12`，最新发布是 `v0.2.2`，`v0.2.1` 已跳过。两者是独立编号，不是同一个数字。
+> **Two version spaces** — the kernel version declared in `kernel_contract.json` is `0.10`; the repository tag is a separate numbering space. The latest non-prerelease Release is `v0.2.4`; the 0.3 beta line (`v0.3.0-beta.1` … `v0.3.0-beta.4`) is published as Pre-release and is not counted as an official release; `v0.2.1` was published, not skipped. They are independent numbers, not the same number.
 >
 > **Cold start** — to resume iteration, start from [`RETURN_HERE.md`](RETURN_HERE.md).
-> **冷启动** — 恢复迭代从 [`RETURN_HERE.md`](RETURN_HERE.md) 开始。
 
 Stdlib-only rule-execution kernel for AI agents: one written rule set in, one deterministic `ALL PASS` / `FAIL` verdict out — and the verdict cannot be silently loosened.
 
@@ -98,9 +95,9 @@ Both loading styles work on the same file: `pip install -e .` + `from bumao_core
 
 ## Roadmap (0.2 — in progress)
 
-Three pieces are in progress (item 2 now ships in-repo). `v0.2.0-beta.3` changes the kernel runtime: gate `A10` now returns an explicit `PASS`/`DENY` verdict instead of a “ledger not found” hint, and `gate_registry.py` gains the `GateRegistry` class. The contract self-test is green in this repo.
+Three pieces are in progress (item 2 now ships in-repo). `v0.2.0-beta.3` (the **0.2** beta.3, not the 0.3 beta line) changes the kernel runtime: gate `A10` now returns an explicit `PASS`/`DENY` verdict instead of a “ledger not found” hint, and `gate_registry.py` gains the `GateRegistry` class. The contract self-test is green in this repo.
 
-1. **Pre-execution constraint** — declare intent before acting; the intent is reviewed before the action runs. Wired in the personal edition's MCP `file_write` path: `path` + `intent` go through the L3 review before dispatch. **Default off** — no launcher starts the MCP server, so nothing is intercepted unless you start it. Controlled run in beta.3: in-scope write allowed; out-of-scope write denied and the target file's SHA-256 unchanged before/after. Not wired into the kernel's own `check --strict` path. *(in progress)*
+1. **Pre-execution constraint** — declare intent before acting; the intent is reviewed before the action runs. Wired in the personal edition's MCP `file_write` path: `path` + `intent` go through the L3 review before dispatch. **Default off** — no launcher starts the MCP server, so nothing is intercepted unless you start it. Controlled run in the 0.2 beta.3: in-scope write allowed; out-of-scope write denied and the target file's SHA-256 unchanged before/after. Not wired into the kernel's own `check --strict` path. *(in progress)*
 2. **In-flight supervision** — check continuously while the action is in progress, not only at the end. As of 0.2.2 the runtime ships in-repo as `bumao_core/jiancha/`; it stays **default off** and is not wired into the live path. *(shipped, default off)*
 3. **Post-execution audit** — link action, basis, result and exception into one traceable chain. Wired in the personal edition (`ledger.py shenji`). *(in progress)*
 
@@ -198,7 +195,7 @@ Copyright 2026 Bumao
 ![gates](https://img.shields.io/badge/gate%20templates-13-brightgreen)
 ![runtime](https://img.shields.io/badge/runtime-stdlib%20only-informational)
 
-> **两个版本空间** — `kernel_contract.json` 声明的内核版本是 `0.10`；仓库 tag 是另一个编号空间：最新稳定 tag 是 `v0.12`，最新发布是 `v0.2.2`，`v0.2.1` 已跳过。两者是独立编号，不是同一个数字。
+> **两个版本空间** — `kernel_contract.json` 声明的内核版本是 `0.10`；仓库 tag 是另一个编号空间。最新正式发布是 `v0.2.4`；0.3 的 beta 系列（`v0.3.0-beta.1` … `v0.3.0-beta.4`）为 Pre-release，不计入正式发布；`v0.2.1` 已发布，未跳过。两者是独立编号，不是同一个数字。
 >
 > **冷启动** — 恢复迭代从 [`RETURN_HERE.md`](RETURN_HERE.md) 开始。
 
@@ -278,9 +275,9 @@ python -c "from bumao_core import engine; print(engine.build_parser().prog)"
 
 ## Roadmap（0.2 — 进行中）
 
-三块在推进中（第 2 项已随仓提供）。`v0.2.0-beta.3` 改动了内核运行时：闸门 `A10` 现在返回显式的 `PASS`/`DENY` 结论，而不再是「台账未找到」的提示；`gate_registry.py` 增加 `GateRegistry` 类。本仓的契约自检为绿。
+三块在推进中（第 2 项已随仓提供）。`v0.2.0-beta.3`（**0.2 的 beta.3**，不是 0.3 的 beta 系列）改动了内核运行时：闸门 `A10` 现在返回显式的 `PASS`/`DENY` 结论，而不再是「台账未找到」的提示；`gate_registry.py` 增加 `GateRegistry` 类。本仓的契约自检为绿。
 
-1. **执行前约束** — 动手前先声明意图；意图在执行动作前被审。已接入个人端的 MCP `file_write` 路径：`path` 与 `intent` 在派发前走 L3 审查。**默认关闭** — 没有启动器会拉起 MCP 服务，不启动就不会拦截任何写入。beta.3 的受控留证：范围内写入放行；越界写入被拒且目标文件前后 SHA-256 不变。未接入内核自身的 `check --strict` 路径。*（进行中）*
+1. **执行前约束** — 动手前先声明意图；意图在执行动作前被审。已接入个人端的 MCP `file_write` 路径：`path` 与 `intent` 在派发前走 L3 审查。**默认关闭** — 没有启动器会拉起 MCP 服务，不启动就不会拦截任何写入。0.2 的 beta.3 的受控留证：范围内写入放行；越界写入被拒且目标文件前后 SHA-256 不变。未接入内核自身的 `check --strict` 路径。*（进行中）*
 2. **执行中监管** — 在动作进行过程中持续检查，而不只在结束时判一次。截至 0.2.2，运行层以 `bumao_core/jiancha/` 随仓提供；仍**默认关闭**，未接入 live 路径。*（已随包，默认关闭）*
 3. **执行后审计** — 把操作、依据、结果、例外串成一条可追溯链。已接入个人端（`ledger.py shenji`）。*（进行中）*
 

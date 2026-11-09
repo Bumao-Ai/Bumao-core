@@ -1,0 +1,34 @@
+{
+  "schema": "core_jieru/1",
+  "_说明": "本文件只是 core 规则体系的接入绑定：把 core 规则库里已声明的检查项 id 绑到决策标签与错误码，并声明期望闸门集合。这里没有判据——身份、签名、重放、范围、拒绝区等判定全部由 core 的规则库装载器、闸门注册表与 jiancha 运行层提供。",
+  "rule_set": "bumao-core/jiancha+adapter-beta2/1",
+  "rules_root": "rules",
+  "expected_gates": [
+    "G0.1", "G0.2", "G0.3", "G0.4", "G0.5", "G0.6",
+    "G0.7", "G0.8", "G0.9", "G0.10", "G0.11"
+  ],
+  "gates": [
+    {"gid": "G0.1", "label": "身份登记", "decision": "DENY", "error_code": "AGENT_UNKNOWN"},
+    {"gid": "G0.2", "label": "签名校验", "decision": "DENY", "error_code": "BAD_SIGNATURE"},
+    {"gid": "G0.3", "label": "重放防护", "decision": "DENY", "error_code": "REPLAY"},
+    {"gid": "G0.4", "label": "能力声明", "decision": "DENY", "error_code": "CAPABILITY_MISSING"},
+    {"gid": "G0.5", "label": "动作类型闸", "decision": "DENY", "error_code": "ACTION_NOT_ALLOWED"},
+    {"gid": "G0.6", "label": "目标形态闸", "decision": "ERROR", "error_code": "TARGET_FORM_INVALID"},
+    {"gid": "G0.7", "label": "拒绝区闸", "decision": "DENY", "error_code": "OUT_OF_SCOPE"},
+    {"gid": "G0.8", "label": "能力范围闸", "decision": "DENY", "error_code": "OUT_OF_SCOPE"},
+    {"gid": "G0.9", "label": "前置条件提示", "decision": "WARNING", "error_code": "TARGET_NOT_FOUND"},
+    {"gid": "G0.10", "label": "审批要求", "decision": "REQUIRE_APPROVAL", "error_code": "NEED_APPROVAL"},
+    {"gid": "G0.11", "label": "放行结论", "decision": "ALLOW", "error_code": ""}
+  ],
+  "action_map": {
+    "file.delete": "file_write",
+    "file.read": "file_read",
+    "file.write": "file_write"
+  },
+  "_action_map_note": "core 0.2 运行层的动作类型集合不含删除；适配器把删除映射为写类动作，交给 core 范围判定。映射关系只在此登记，不改 core 动作类型。",
+  "order": {
+    "approved_by": "beta2-sandbox-operator",
+    "note": "beta2 沙盒接入单（执行前治理，不执行动作）",
+    "ttl_sec": 3600
+  }
+}

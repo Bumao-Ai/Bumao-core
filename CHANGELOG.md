@@ -2,6 +2,44 @@
 
 > 发版流程：每次发版，Release 正文必须中英双侧齐全（中文在前、英文在后，英文逐条对应，不得只给摘要）；只有一侧不算发完。核对项见 `CONTRIBUTING.md`「发版清单（维护者）」。
 
+## 0.3.0-beta.4 — 2026-11-09
+
+文案版：不改代码，只修对外文案、补一份文档。
+
+**改了什么**
+- 新增 `beta/v0.3.0-beta.4/README.md`：写明本版只改文案、代码与 `v0.3.0-beta.2` 逐字节相同、包内清单与跑法、各 beta 的 tag／Release／资产互不覆盖、元数据与账本标识为何刻意沿用 beta.2。
+- 包内 `beta2/README.md`、`beta2/YANSHOU.md` 的标题与自述改为「随 beta.4 收录、代码与 beta.2 逐字节相同」，不再自称「本目录是 beta.2 的全部内容」。
+- 随包收录规划原文 `0.3_guihua_261109.md`（7,479 字节，SHA256 `28ce30eb487fd312f81d530933cbb946b674beb841a9abd20eb0d2785a4863c6`），使计划书与差距分析里对它的引用在包内成立。
+- 仓根 `README.md` 的发布事实更正为实际状态：最新正式发布 `v0.2.4`，0.3 的 beta 系列为 Pre-release，`v0.2.1` 已发布、未跳过；清掉英半区里重复的中文行；给 `v0.2.0-beta.3` 与「beta.3 的受控留证」加「0.2 的 beta.3」限定词。
+- `beta/v0.3.0-beta.1/beta1/README.md` 去掉本机绝对路径、改为仓内相对路径；「十项原文未送达」改为指向 `beta/v0.3.0-beta.4/0.3_jihua_261109.md` §5／§6。
+- 统一 `beta/v0.3.0-beta.2` 与 beta.3／beta.4 的 `beta2/YANSHOU.md` 第 5 项边界句（补「如实标注」4 个汉字，9,128 → 9,140 字节）。
+
+**验了什么**
+- 线上资产解包后 `python run_beta2.py` 末行 `21/21 项符合预期；rc=0`；`query_cli.py --status`／`--op`／`--pending` 均有输出。
+- 代码未改：`beta2/vendor/core` 9 个文件的 SHA256 与 `v0.3.0-beta.2` 一致。
+
+## 0.3.0-beta.3 — 2026-11-09
+
+文档英文侧补齐：beta1 与 beta2 的 7 个说明文档改为中英对照，中文原文在前、完整英文在后；代码、配置与判据与 `v0.3.0-beta.2` 逐字节相同，本版不发代码变更。
+
+**验了什么**
+- 仓内 7 个文件均以 `---` 与 `# English Version` 分隔，线上抓回的仓内同名文件可见英文段。
+- 已发 `v0.3.0-beta.1`、`v0.3.0-beta.2` 的 tag、Release 与资产未改动。
+
+## 0.3.0-beta.2 — 2026-11-09
+
+补齐 beta.1 十项验收里未满足的六项：审查改经 core 规则库、闸门登记与运行层 `pre_check`；新增 Adapter（请求／响应转换、身份映射、错误处理、接入状态）；注销后重提得 `DENY / AGENT_UNKNOWN`；批一条拒一条、审批人非占位；证据留 `params` 与 `receipt`（未提供时 `receipt: null`）；`by_op` 返回同 `op_id` 全部记录并配 CLI 查询。
+
+**验了什么**
+- `run_beta2.py` 末行 `21/21 项符合预期；rc=0`；账本 10 条记录（治理请求 8／审批结论 2），`pending=0`。
+
+## 0.3.0-beta.1 — 2026-11-09
+
+Bumao Core 0.3 的第一个 beta：外部 Agent 以受治理身份提交操作的最小骨架。含 `req/1`（9 字段＋HMAC-SHA256 签名＋nonce/ts）、身份与能力识别、执行前规则审查、四外键证据记录、按 `op_id` 回查；7 条反向用例各留一条证据。
+
+**验了什么**
+- `run_beta1.py` 末行 `13/13 项符合预期；rc=0`。
+
 ## 0.2.4 — 2026-11-09
 
 A10 授权闸三态版：授权按「变更当日」判，跨版本轴的比对去掉。
@@ -168,6 +206,44 @@ Not shipped yet (do not count as done): `runtime_preflight.py`, the second batch
 ## English
 
 > Release process: every release body must be complete in both Chinese and English (Chinese first, English after, item-by-item correspondence, not a summary); one side alone does not count as released. See "Release checklist (maintainers)" in `CONTRIBUTING.md`.
+
+### 0.3.0-beta.4 — 2026-11-09
+
+Documentation edition: no code change; only external-facing wording is fixed and one document is added.
+
+**What changed**
+- Added `beta/v0.3.0-beta.4/README.md`: states that this version changes documentation only, that the code is byte-identical to `v0.3.0-beta.2`, what the package contains and how to run it, that the betas' tags/Releases/assets never overwrite each other, and why the metadata and ledger identifiers are deliberately kept at beta.2.
+- In the package, the title and self-description of `beta2/README.md` and `beta2/YANSHOU.md` now read "included with beta.4, code byte-identical to beta.2" instead of "this directory is the entire contents of beta.2".
+- The planning source text `0.3_guihua_261109.md` is included in the package (7,479 bytes, SHA256 `28ce30eb487fd312f81d530933cbb946b674beb841a9abd20eb0d2785a4863c6`), so that the references to it in the plan and the gap analysis resolve inside the package.
+- The release facts in the root `README.md` are corrected to the actual state: the latest non-prerelease Release is `v0.2.4`, the 0.3 beta line is Pre-release, and `v0.2.1` was published, not skipped; duplicate Chinese lines in the English half are removed; `v0.2.0-beta.3` and "controlled run in beta.3" are qualified as the 0.2 beta.3.
+- In `beta/v0.3.0-beta.1/beta1/README.md`, local absolute paths are replaced with in-repo relative paths, and "the original text of the ten acceptance criteria was not delivered" now points to `beta/v0.3.0-beta.4/0.3_jihua_261109.md` §5/§6.
+- The Item 5 boundary sentence in `beta2/YANSHOU.md` is unified across `beta/v0.3.0-beta.2` and beta.3/beta.4 (4 Chinese characters added, 9,128 → 9,140 bytes).
+
+**What was verified**
+- After unpacking the online asset, `python run_beta2.py` ends with `21/21 items met expectations; rc=0`; `query_cli.py --status` / `--op` / `--pending` all produce output.
+- No code change: the SHA256 of the 9 files under `beta2/vendor/core` is identical to `v0.3.0-beta.2`.
+
+### 0.3.0-beta.3 — 2026-11-09
+
+English side of the documentation completed: the 7 explanatory documents of beta1 and beta2 become bilingual, with the Chinese original first and the full English after; code, configuration and criteria are byte-identical to `v0.3.0-beta.2`, and this version ships no code change.
+
+**What was verified**
+- All 7 in-repo files are separated by `---` and `# English Version`, and the same-named files fetched back from the online repo show the English section.
+- The tags, Releases and assets of the published `v0.3.0-beta.1` and `v0.3.0-beta.2` are unchanged.
+
+### 0.3.0-beta.2 — 2026-11-09
+
+Filled the six unmet items of beta.1's ten-item acceptance: review now goes through the core rule library, gate registration and the runtime layer's `pre_check`; added the Adapter (request/response transformation, identity mapping, error handling, onboarding status); after revocation a resubmission yields `DENY / AGENT_UNKNOWN`; one approval and one rejection with non-placeholder approvers; evidence keeps `params` and `receipt` (`receipt: null` when not supplied); `by_op` returns every record under the same `op_id`, with CLI queries.
+
+**What was verified**
+- `run_beta2.py` ends with `21/21 items met expectations; rc=0`; the ledger holds 10 records (8 governance requests / 2 approval decisions), `pending=0`.
+
+### 0.3.0-beta.1 — 2026-11-09
+
+The first beta of Bumao Core 0.3: a minimal skeleton for an external Agent submitting operations under a governed identity. It covers `req/1` (9 fields + HMAC-SHA256 signature + nonce/ts), identity and capability resolution, pre-execution rule review, four-foreign-key evidence records, and lookup by `op_id`; each of the 7 reverse cases leaves one evidence record.
+
+**What was verified**
+- `run_beta1.py` ends with `13/13 items met expectations; rc=0`.
 
 ### 0.2.4 — 2026-11-09
 
