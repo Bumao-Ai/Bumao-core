@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bumao-core"
-version = "0.2.3"
+version = "0.2.4"
 description = "Stdlib-only rule-execution kernel: one rule set in, one deterministic verdict out."
 readme = "README.md"
 requires-python = ">=3.8"

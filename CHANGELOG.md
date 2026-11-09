@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.2.4 — 2026-11-09
+
+A10 授权闸三态版：授权按「变更当日」判，跨版本轴的比对去掉。
+
+**改了什么**
+- A10 判据改为三态：契约 `core_version` 自上次授权后未变更（`updated_at` 早于最近授权条目日期）→ PASS；有变更（`updated_at` 不早于最近授权日）→ 变更当日有授权条目则 PASS、无则 DENY；判不了（契约缺字段、`updated_at` 非法、审批册不可读或无可解析授权条目）→ DENY。
+- 旧实现把「没有审批册」直接当「未授权变更」，并拿契约版本号去比对审批册里另一条版本轴的版本号，导致合法包恒红；新判据只看变更日期有无授权，不再跨轴比版本。
+- 契约 `meta.updated_at` 由 2026-11-07 改为 2026-11-09，同日审批册登记第 24 号授权条目。
+- `test_a10_policy.py` 改为三态用例：未变更 PASS、有变更无授权 DENY、有变更有授权 PASS、判不了 DENY，另加真实文件路径两例。
+
+**验了什么**
+- `test_a10_policy.py` 10/10，rc=0。真实契约与审批册：`A10 判定=PASS ｜ 三态=changed ｜ 变更当日（2026-11-09）有授权条目`。
+- `selftest --kernel` 6/6，rc=0；`contract_test.py` 12 项，0 FAIL，0 SKIP，3 N/A，rc=0。
+- `test_build_parser.py`／`test_gate_registry.py`／`test_check_rc.py`／`test_jiancha_loader.py`／`test_jiancha_scope.py`／`test_jiancha_ledger.py`／`test_jiancha_recovery.py` 全部 rc=0。
+- 全新解包 0.2.4 发布件复跑：`selftest --kernel` 6/6 rc=0、`contract_test.py` 12 项 0 FAIL rc=0。
+
 ## 0.2.3 — 2026-11-09
 
 运行层与打包订正版：装上就完整、目标按真实位置判、账本可并发写。
