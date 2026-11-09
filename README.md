@@ -93,15 +93,15 @@ Both loading styles work on the same file: `pip install -e .` + `from bumao_core
 
 快速开始沿用上方代码块。宿主必须实现的 12 个成员见 [`bumao_core/HOST_CONTRACT.md`](bumao_core/HOST_CONTRACT.md)；`bumao_core/bumao_core_rules.py` 是参考实现、不参与运行时；可直接复制运行的最小接入样例见 [`examples/minimal_host.py`](examples/minimal_host.py)。配套发行版见 `bumao-xtgl-community`（59 rules / 44 checks）与 `bumao-xtgl-minimal`（0 rules / 28 checks）。
 
-## Roadmap (0.2 — in progress)
+## Roadmap (0.2 — live in the maintainer's edition)
 
-Three pieces are in progress (item 2 now ships in-repo). `v0.2.0-beta.3` (the **0.2** beta.3, not the 0.3 beta line) changes the kernel runtime: gate `A10` now returns an explicit `PASS`/`DENY` verdict instead of a “ledger not found” hint, and `gate_registry.py` gains the `GateRegistry` class. The contract self-test is green in this repo.
+Three pieces landed in the maintainer's live edition on 2026-11-09; this repository ships the runtime and stays default-off. `v0.2.0-beta.3` (the **0.2** beta.3, not the 0.3 beta line) changes the kernel runtime: gate `A10` now returns an explicit `PASS`/`DENY` verdict instead of a “ledger not found” hint, and `gate_registry.py` gains the `GateRegistry` class. The contract self-test is green in this repo.
 
-1. **Pre-execution constraint** — declare intent before acting; the intent is reviewed before the action runs. Wired in the personal edition's MCP `file_write` path: `path` + `intent` go through the L3 review before dispatch. **Default off** — no launcher starts the MCP server, so nothing is intercepted unless you start it. Controlled run in the 0.2 beta.3: in-scope write allowed; out-of-scope write denied and the target file's SHA-256 unchanged before/after. Not wired into the kernel's own `check --strict` path. *(in progress)*
-2. **In-flight supervision** — check continuously while the action is in progress, not only at the end. As of 0.2.2 the runtime ships in-repo as `bumao_core/jiancha/`; it stays **default off** and is not wired into the live path. *(shipped, default off)*
-3. **Post-execution audit** — link action, basis, result and exception into one traceable chain. Wired in the personal edition (`ledger.py shenji`). *(in progress)*
+1. **Pre-execution constraint** — declare intent before acting; the intent is reviewed before the action runs. Wired in the personal edition's MCP `file_write` path: `path` + `intent` go through the L3 review before dispatch. **Default off** — no launcher starts the MCP server, so nothing is intercepted unless you start it. Live replay on 2026-11-09 in the maintainer's personal edition: a compliant order ran; no order and out-of-scope targets were rejected before execution (`OUT_OF_SCOPE`); the target file's SHA-256 stayed unchanged on denial. The kernel's own `check --strict` path is still not wired. *(live in the maintainer's edition; default off here)*
+2. **In-flight supervision** — check continuously while the action is in progress, not only at the end. The runtime ships in-repo as `bumao_core/jiancha/`. Live replay on 2026-11-09 in the maintainer's personal edition: 10 action-level rows under one `op_id`; a mid-sequence outside change halted the next action with `EXTERNAL_DRIFT` and an evidence bundle (`halt.json` / `diff.txt` / ledger snapshot / `manifest.sha256`); work resumed only after recover plus a human approval. *(live in the maintainer's edition; default off here)*
+3. **Post-execution audit** — link action, basis, result and exception into one traceable chain. Wired in the personal edition (`ledger.py shenji`). On 2026-11-09 one command exported action rows, supervision rows, the ticket and the four keys (`op_id` / `run_id` / `rule_id` / `error_code`, missing values printed as「缺失」) under a live `op_id`. *(live in the maintainer's edition)*
 
-Status: **in progress** — pre-execution intent is wired and default-off in the personal edition; in-flight supervision ships in `bumao_core/jiancha/` but stays default off; the kernel's own check path is unchanged.
+Status: **landed in the maintainer's live edition** (2026-11-09) — all three items were replayed under one `op_id`; this repository still ships the runtime default-off (`BUMO_JIANCHA_MODE=off`); the kernel's own check path is unchanged.
 
 ## Architecture
 
@@ -273,15 +273,15 @@ python -c "from bumao_core import engine; print(engine.build_parser().prog)"
 | 发布 | 19 个 tag，`v0.1` → `v0.2.6`，均为 2026-11 | `git tag` |
 | 变更记录 | [CHANGELOG.md](CHANGELOG.md) | — |
 
-## Roadmap（0.2 — 进行中）
+## Roadmap（0.2 — 维护者活区已落地）
 
-三块在推进中（第 2 项已随仓提供）。`v0.2.0-beta.3`（**0.2 的 beta.3**，不是 0.3 的 beta 系列）改动了内核运行时：闸门 `A10` 现在返回显式的 `PASS`/`DENY` 结论，而不再是「台账未找到」的提示；`gate_registry.py` 增加 `GateRegistry` 类。本仓的契约自检为绿。
+三块已于 2026-11-09 在维护者活区落地；本仓随包运行层保持默认关闭。`v0.2.0-beta.3`（**0.2 的 beta.3**，不是 0.3 的 beta 系列）改动了内核运行时：闸门 `A10` 现在返回显式的 `PASS`/`DENY` 结论，而不再是「台账未找到」的提示；`gate_registry.py` 增加 `GateRegistry` 类。本仓的契约自检为绿。
 
-1. **执行前约束** — 动手前先声明意图；意图在执行动作前被审。已接入个人端的 MCP `file_write` 路径：`path` 与 `intent` 在派发前走 L3 审查。**默认关闭** — 没有启动器会拉起 MCP 服务，不启动就不会拦截任何写入。0.2 的 beta.3 的受控留证：范围内写入放行；越界写入被拒且目标文件前后 SHA-256 不变。未接入内核自身的 `check --strict` 路径。*（进行中）*
-2. **执行中监管** — 在动作进行过程中持续检查，而不只在结束时判一次。截至 0.2.2，运行层以 `bumao_core/jiancha/` 随仓提供；仍**默认关闭**，未接入 live 路径。*（已随包，默认关闭）*
-3. **执行后审计** — 把操作、依据、结果、例外串成一条可追溯链。已接入个人端（`ledger.py shenji`）。*（进行中）*
+1. **执行前约束** — 动手前先声明意图；意图在执行动作前被审。已接入个人端的 MCP `file_write` 路径：`path` 与 `intent` 在派发前走 L3 审查。**默认关闭** — 没有启动器会拉起 MCP 服务，不启动就不会拦截任何写入。2026-11-09 在维护者个人端实跑：合规单放行；无单与越界目标在执行前即拒（`OUT_OF_SCOPE`），目标文件 SHA-256 不变。内核自身的 `check --strict` 路径仍未接入。*（维护者活区已实跑；本仓默认关闭）*
+2. **执行中监管** — 在动作进行过程中持续检查，而不只在结束时判一次。运行层以 `bumao_core/jiancha/` 随仓提供。2026-11-09 在维护者个人端实跑：同一 `op_id` 下 10 条动作级记录；序列中途的单外改动使下一次动作以 `EXTERNAL_DRIFT` 中断并生成证据包（`halt.json`／`diff.txt`／账本快照／`manifest.sha256`）；恢复须先 recover 再经人工批准 resume。*（维护者活区已实跑；本仓默认关闭）*
+3. **执行后审计** — 把操作、依据、结果、例外串成一条可追溯链。已接入个人端（`ledger.py shenji`）：2026-11-09 在同一 `op_id` 下用一条命令导出动作行、监管行、票证与四键（`op_id`／`run_id`／`rule_id`／`error_code`，缺值写「缺失」）。*（维护者活区已落地）*
 
-状态：**进行中** — 执行前意图已在个人端接入且默认关闭；执行中监管随 `bumao_core/jiancha/` 提供但仍默认关闭；内核自身的 check 路径未改动。
+状态：**维护者活区已落地**（2026-11-09）—— 三项在同一 `op_id` 下实跑；本仓随包运行层仍默认关闭（`BUMO_JIANCHA_MODE=off`）；内核自身的 check 路径未改动。
 
 ## 架构
 
