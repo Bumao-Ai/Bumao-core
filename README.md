@@ -52,7 +52,7 @@ Subcommands: `whoami` (`--full`), `check` (`--strict`, `--quick`), `audit`, `bum
 - `--strict` is a legacy-compatible flag: every FAIL already returns a non-zero exit code, so it does not change any judgement.
 - `whoami --full` appends four diagnostic lines; without it the output is byte-identical to earlier versions.
 
-**Runtime layer (0.2.1+)** — `bumao_core/jiancha/` ships the in-flight supervision package (supervisor, action ledger, scope, reason codes, cleanup). `engine.py` does not import it and it changes no kernel verdict; the host imports it explicitly. The host-layout adapters (`personal_adapter.py`, `gate_check.py`) do nothing useful in a bare clone.
+**Runtime layer (0.2.1+, loader in 0.2.2)** — `bumao_core/jiancha/` ships the in-flight supervision package (supervisor, action ledger, scope, reason codes, cleanup). Default off: `bumao_core.jiancha.loader.load_if_enabled()` returns `None` unless `BUMO_JIANCHA_MODE` is `shadow` or `enforce`; unset / `off` / unknown values never load it. `engine.py` does not import it and it changes no kernel verdict. The host-layout adapters (`personal_adapter.py`, `gate_check.py`) do nothing useful in a bare clone.
 
 ## Self-test: kernel vs host
 
@@ -80,12 +80,12 @@ Both loading styles work on the same file: `pip install -e .` + `from bumao_core
 
 | Item | Value | Source |
 |---|---|---|
-| Commits at `v0.2.2` | 17 | `git rev-list --count v0.2.2` |
+| Commits at `v0.2.2` | 18 | `git rev-list --count v0.2.2` |
 | Last commit | 2026-11-09 | `git log -1 --date=short` |
 | Check items | 13 gate templates | `bumao_core/bumao_core_gates.py` (`make_*_gate`) |
 | Shipped tests | `test_check_rc.py` · `test_build_parser.py` · `test_a10_policy.py` (7/7) · `test_gate_registry.py` | `python bumao_core/<test>.py` |
 | Defect ledger | not kept in this repo | — |
-| Releases | 10 tags, `v0.1` → `v0.2.2`, all 2026-11 | `git tag` |
+| Releases | 11 tags, `v0.1` → `v0.2.2`, all 2026-11 | `git tag` |
 | Changelog | [CHANGELOG.md](CHANGELOG.md) | — |
 
 ## 中文
@@ -175,7 +175,7 @@ assets/                official logos
 - `check --strict` in this repo is `1/12` red: `A10` is `DENY` by design (the shipped ledger's single entry does not satisfy L2's same-day rule). `A13` seeds its baseline on first run and then passes. In an existing working tree that already has an A13 baseline, editing a core file without a same-day approval entry turns `A13` red by design.
 - `bumao_core/gate_count.py` and `bumao_core/test_equivalence.py` require the `<HX>/kernel/bumao_core` layout with all three editions checked out as siblings. Outside that layout they print `需要三端同级检出` and exit `2` — not PASS, not FAIL, so a single-repo clone cannot report a false green or a misleading red.
 - `python examples/minimal_host.py` runs a real check without any edition. Its `check` exit code is `1` because the sample ships no approval ledger, so `A10` is `DENY` by design; the script prints this explicitly.
-- `bumao_core/jiancha/` is the in-flight supervision runtime included as of 0.2.1. `engine.py` does not import it; the host imports it explicitly. `personal_adapter.py` and `gate_check.py` assume the host directory layout.
+- `bumao_core/jiancha/` is the in-flight supervision runtime included as of 0.2.1, with a loader since 0.2.2. It stays off unless `BUMO_JIANCHA_MODE` is `shadow` or `enforce`; `engine.py` does not import it. `personal_adapter.py` and `gate_check.py` assume the host directory layout.
 
 ## Docs / License
 

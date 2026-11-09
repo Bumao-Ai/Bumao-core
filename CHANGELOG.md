@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.2.2 — 2026-11-09
+
+0.2 的定型版：在 0.2.1 基础上补装载器、对齐文档与契约，并修掉 0.2.1 露出的装载缺口。
+
+**改了什么**
+- 新增 `bumao_core/jiancha/loader.py`：`mode()` 读取 `BUMO_JIANCHA_MODE`，只认 `off`／`shadow`／`enforce`；未设、空串、未知值一律归 `off`。`is_enabled()` 与 `load_if_enabled()` 据此返回；关闭时返回 `None`，开启时才延迟导入 `supervisor`。这是对 0.2.1「只有包、没有装载器」的补齐。
+- 新增 `bumao_core/test_jiancha_loader.py`：覆盖未设／空串／未知值／`off`／`shadow`／`enforce` 六态，以及关闭/开启两种加载返回。
+- 文档与契约对齐：README 与 `HOST_CONTRACT.md §十一` 改为「默认关闭 + 装载器口径」，不再写「宿主自己 import 即可」。
+
+**验了什么**
+- `test_jiancha_loader.py`：六态 + 两个加载用例全部 PASS，rc=0。
+- `selftest --kernel` 6/6，rc=0；`contract_test.py` 12 项 0 FAIL，rc=0；四个内核单测 rc=0。
+- 解包 0.2.1 发布件复跑：`selftest --kernel` 6/6 rc=0、`contract_test.py` 12/0 rc=0。
+
+**还差什么**
+- 恢复半成功语义仍只有「停机等人」：不提供「继续恢复剩余」，也没有 `partial` 状态；本版未改此语义。
+- community 凭据 `check_last.json` 丢失：可删面已定位，具体那一次未查明。
+- community `4/44` 只定位到触发条件（凭据缺失复现 `3/44`；凭据过期复现 `4/44`），最初那次无逐条留存，无法归因。
+- 三端随包内核未跟随：community／minimal 的 `engine.py` 仍为 `7bd00e2cd72d`，并缺 `host_reference.py`／`test_a10_policy.py`／`test_gate_registry.py`；personal 无 `kernel/bumao_core`。community 审批册未新建，A10／A13 仍是已知存量缺口。
+- 装载器只做开关与延迟导入，宿主尚未把运行层接进实际执行路径。
+
 ## 0.2.1 — 2026-11-09
 
 **改了什么**

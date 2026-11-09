@@ -329,7 +329,7 @@ bumao_core/jiancha/
   schema/reason_codes.json 错误码表（含 RESTORE_FAILED）
 ```
 
-- **宿主显式导入**：`engine.py` 不导入运行层；宿主自己 `import bumao_core.jiancha` 才会加载。不导入时不建目录、不写账。
+- **默认关闭（0.2.2 起有装载器）**：`bumao_core.jiancha.loader.load_if_enabled()` 仅在 `BUMO_JIANCHA_MODE` 为 `shadow`／`enforce` 时加载；未设、`off`、未知值一律返回 `None`，不建目录、不写账。`engine.py` 不导入运行层。
 - **相对导入**：包内一律 `from . import ...`。宿主 `10_rac/` 下已有同名 `ledger.py`（另一套账本），不得用 `sys.path` 插入后绝对导入，否则会顶掉宿主模块。
 - **契约边界**：运行层不改变宿主必须实现的 12 个成员，也不改变任何内核判定；它只消费宿主注入的事件与文件树。
 - **状态口径**：恢复遇失败即中止整轮、已恢复件保留；不新增 `partial` 状态；失败码 `RESTORE_FAILED`。
