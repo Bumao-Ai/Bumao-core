@@ -1,0 +1,7 @@
+{
+  "name": "Bumao Core 0.3 beta2 Agent 治理接入规则",
+  "version": "0.3.0-beta2",
+  "effective": "2026-11-09",
+  "clauses": 11,
+  "_note": "本文件是 core 规则库的 meta，由 bumao_core_rules.load_meta 读取；仅沙盒实验用。"
+}

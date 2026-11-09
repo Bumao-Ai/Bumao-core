@@ -47,3 +47,56 @@ beta1/
 - 没有并发与锁，单进程顺序跑；
 - 没有把规则审查接到 core 的 `gate_registry` 实例上（复用其口径，未做注册期接线）；
 - 十项验收条件原文未送达，beta1 只覆盖任务明示的五步链路。
+---
+
+# English Version
+
+# beta1 — the Minimum Runnable Skeleton of Bumao Core 0.3
+
+- Nature: sandbox experimental artifact; does not participate in any released product
+- Location: `D:\XJQITA\GCML_lab\v0.3_20261109\beta1`
+- Interpreter measured: `D:\XJQITA\HSYX\Python\python.exe` (Python 3.12.4)
+- Run: `& "D:\XJQITA\HSYX\Python\python.exe" run_beta1.py`
+- Exit code: 0 = the five-step chain + all 7 negative cases behave as expected and the ledger chain has no break point
+
+## Directory structure
+
+```
+beta1/
+├─ beta1_canshu.json          Parameter file (workspace, ledger, seed, rule set)
+├─ rules_beta1.json           Rule package (R0.1–R0.11, including the five-value decision mapping)
+├─ run_beta1.py               Entry point that actually runs the five-step chain
+├─ agentos/
+│  ├─ identity.py             Agent registration and identity management + capability registration
+│  ├─ request.py              req/1 unified operation request (structural validation + HMAC signature)
+│  ├─ review.py               Pre-execution rule review (five-value decision, rule_id definition inherited from 0.2)
+│  ├─ evidence.py             act/1 evidence record (four foreign keys + approval placeholder)
+│  └─ query.py                Read-only query and chain integrity status
+├─ vendor/
+│  └─ ledger.py               Verbatim copy of 0.2 jiancha/ledger.py (hash-chain ledger)
+└─ workspace/                 Example targets (approved / review / _frozen)
+```
+
+## Reuse (no rewriting)
+
+- Hash-chain ledger: `vendor/ledger.py` and `D:\XJQITA\GCML_lab\v0.2_261108_jiancha\jiancha\ledger.py`
+  are **byte-for-byte identical** (see this round's report for the SHA256).
+- Four foreign keys definition: `op_id` / `run_id` / `rule_id` / `error_code`, with the same names and the same meanings as in the 0.2 ticket chain.
+- `rule_id` value: the id of the first failing item; if nothing fails, the id of the last passing item (following the 0.2 `supervisor._rule_id` rule).
+
+## What beta1 achieved
+
+1. Unified request `req/1`: 9 fields; a missing field, a wrong field type, or a schema mismatch always yields `ERROR`;
+2. Identity and capability: registration, capability declaration, HMAC signature verification, revocation flag, nonce anti-replay;
+3. Rule review: all five values `ALLOW` / `DENY` / `REQUIRE_APPROVAL` / `WARNING` / `ERROR` appeared in actual runs;
+4. Evidence recording: Agent identity, request digest, time, rule version, hit rule, decision, approval placeholder, exception, four foreign keys;
+5. Query back: hits by `op_id`; `verify()` reports no chain break point.
+
+## What beta1 did not achieve (explicit boundaries)
+
+- Only CLI read-only queries; no Web console;
+- No real host wiring (the MCP / personal adapters are interface placeholders only, not connected to production);
+- Approver identity is not signed; the approval result is only a placeholder field;
+- No concurrency or locking; a single process runs sequentially;
+- Rule review is not wired onto core's `gate_registry` instance (its definition is reused, but registration-time wiring is not done);
+- The original text of the ten acceptance criteria was not delivered; beta1 covers only the five-step chain explicitly stated in the task.

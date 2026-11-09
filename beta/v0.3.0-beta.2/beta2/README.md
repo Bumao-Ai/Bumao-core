@@ -105,3 +105,115 @@ Agent 协议层（身份、签名、重放、能力声明）core 无对应件，
 - 不执行任何真实操作；只给执行前治理决策。
 - 不改 core 仓、不改 0.2.x、不改 beta1 的 tag/Release/资产。
 - `rule_id` 口径沿用 0.2（首个失败项即命中规则）；本包不新增判据。
+---
+
+# English Version
+
+# Bumao Core 0.3 · beta2 (Agent onboarding and pre-execution governance · minimal runnable skeleton)
+
+This directory contains the entire contents of `v0.3.0-beta.2`. beta1's tag/Release/assets are not in this package, nor are they covered by it.
+
+## What this version is
+
+beta2 closes six weak points in beta1's five-step chain:
+
+| # | beta1 state | beta2 approach |
+| --- | --- | --- |
+| Item 5 | Review used a built-in `rules_beta1.json`, unrelated to the core rule system | Deleted the built-in rule table; `review` only forwards, and all decisions go through core native artifacts in `vendor/core` (rule-base loader + gate registry + jiancha runtime pre-action decision entry point) |
+| Item 9 | The sample Agent connected directly to `request.build` | Added `agentos/adapter.py`; the sample Agent `DemoAgent` can only call `adapter.submit`; request/response conversion, identity mapping, error handling, and integration status detection all live inside the Adapter |
+| Item 1 | Revocation not actually run | `revoke()` returns the state before and after revocation; after revocation, a real submission gives `DENY/AGENT_UNKNOWN` |
+| Item 7 | Only a placeholder approver, no rejection path | One approved, one rejected; approvers are real named persons (Engineer Zhang / Engineer Li with employee IDs), and both records can be looked up |
+| Item 8 | Only the request hash was kept, no receipt field | Evidence keeps the whole `params`; added a `receipt` field (`null` plus reason when the integrating party does not provide one); request / decision / execution result are kept in three separate parts |
+| Item 10 | `by_op` returned only the first record; approvals started a separate op_id | `by_op` returns all records under the same `op_id`; approval records share the same `op_id` as the governance request; command-line query provided |
+
+## Directory
+
+```
+beta2/
+  run_beta2.py          real-run entry (21 assertions, rc=0/1)
+  query_cli.py          governance record command-line query
+  demo_agent.py         sample Agent (submits only through the Adapter)
+  meta.json             core rule-base meta (name/version/effective date)
+  rules/r01.json        core rule-base clauses (11 clauses, corresponding to 11 gates)
+  core_rules_jieru.json core integration config (binds only decision labels and action mappings, no criteria)
+  beta2_canshu.json     runtime parameter file
+  agentos/
+    identity.py         Agent registration/revocation/capability registration
+    request.py          req/1 unified request (9 fields + HMAC)
+    review.py           review forwarding (anomalies are always ERROR)
+    core_bridge.py      the only integration point with core
+    adapter.py          standard Adapter
+    evidence.py         evidence recording (including params and receipt)
+    query.py            query (by_op returns all)
+  vendor/
+    ledger.py           verbatim copy of 0.2 jiancha/ledger.py
+    core/               verbatim copies of core native artifacts (see table below)
+  workspace/            sandbox targets (rebuildable at runtime)
+  run/                  runtime artifacts (agents/identity_map/actions.jsonl/nonces/core)
+```
+
+## How to run
+
+Prerequisite: Python 3.8+, no third-party dependencies.
+
+```
+cd beta2
+python run_beta2.py          # five-step chain + revocation + negative cases + dual approvals; rc printed on the last line
+python query_cli.py --status
+python query_cli.py --op <op_id>      # all related records under the same op_id
+python query_cli.py --pending
+python query_cli.py --agent agent-demo --json
+```
+
+Each run of `run_beta2.py` rebuilds `run/` and `workspace/`, and the ledger is rebuilt accordingly.
+
+## core integration call chain (evidence for Item 5)
+
+```
+review.run(req)
+  └─ core_bridge.review(req)
+       ├─ bumao_core_rules.find_root / load_db / index / load_meta
+       │    returns: rule base db (11 clauses) + meta (version 0.3.0-beta2)
+       ├─ gate_registry.GateRegistry(engine_module=engine)
+       │    .register("B", G0.1 … G0.11, …)   × 11
+       │    .validate(expected=11 gates)          → PASS
+       │    .run_all(db, strict=False)         → [(gid, ok, detail)] × 11
+       └─ jiancha.supervisor.Supervisor.begin → pre_check(action)
+              returns: {result, code, items}; 7 S0 items
+                  action type / target shape / denial zone / approval scope decisions come from this result
+```
+
+Decision labels (ALLOW/DENY/REQUIRE_APPROVAL/WARNING/ERROR and error_code) are bound by
+`core_rules_jieru.json`; that file contains no criteria — the criteria live in the core native artifacts.
+For the Agent protocol layer (identity, signature, replay, capability declaration) core has no corresponding
+artifacts, so they are still decided by `agentos`, but they are likewise registered into `GateRegistry` in the
+form of core gates and run all together in registration order.
+
+## Three concepts are not merged
+
+- **Governance request**: `record["request"]`, containing the full 9-field request, `params`, and `request_sha256`.
+- **Governance decision**: `record["decision"]` / `rule_id` / `error_code` / `checks`, stating only whether it is allowed.
+- **Actual execution result**: `record["receipt"]`. beta2 executes no action; when the integrating party does not
+  provide a receipt, it writes `receipt: null` and puts the reason in `receipt_note`. `ALLOW` does not mean the action has been executed.
+
+## vendor/core verbatim copy hashes (consistent with the current working tree of the core repo)
+
+| File | SHA256 |
+| --- | --- |
+| `bumao_core_rules.py` | `A8692A78965CF05252E720A861DBBEE1A6B17F5ACD8A3EC7D264D928DA7877E7` |
+| `engine.py` | `B5401F1F3C902867DB520ED5D449EC4342BF2955FF40BB94F900862A8FA1CD5E` |
+| `gate_registry.py` | `5E682853E9A4DEFDD93711892DF98CB5BB9D7553CFC54D5DB96330ABC421A09A` |
+| `jiancha/__init__.py` | `F1E1EC3B6E5BA9FB282CFE1AE03487580C0D653DE0F37BE9630210213B27D1E6` |
+| `jiancha/scope.py` | `FAD56D0A7F0D2B32333099C9D7B8DC9AFDFCADF9CB28C45608FE4599606AEA1B` |
+| `jiancha/reasons.py` | `3A5579CAC364E2D2150F6AF895AF511D15A985D930FA3A86E7202069FDB64EAE` |
+| `jiancha/ledger.py` | `DBED288B0477B6501E586EB40F031D81A1DEB3E1651A64C5005B184CECAD15D4` |
+| `jiancha/supervisor.py` | `6F932246C0F09100CB0747D91CFDBC99B04C3711F3830984A434CC243D0C9AAF` |
+| `jiancha/schema/reason_codes.json` | `2DE3C2CCEED2284D6DA61DC0D48972D497C7C8E7D8A4C0AA1E403CAFBF26FDC9` |
+
+The copies change only paths, not content: the SHA256 of each file matches the corresponding file in the `bumao-core` repo.
+
+## Boundaries
+
+- Executes no real operations; provides only pre-execution governance decisions.
+- Does not modify the core repo, does not modify 0.2.x, does not modify beta1's tag/Release/assets.
+- `rule_id` follows 0.2's convention (the first failing item is the matched rule); this package adds no criteria.
