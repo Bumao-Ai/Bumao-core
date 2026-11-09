@@ -7,7 +7,7 @@ Status: maintenance pause
 ![gates](https://img.shields.io/badge/gate%20templates-13-brightgreen)
 ![runtime](https://img.shields.io/badge/runtime-stdlib%20only-informational)
 
-> **Two version spaces** — the kernel version declared in `kernel_contract.json` is `0.10`; the repository tag is a separate numbering space. The latest non-prerelease Release is `v0.2.4`; the 0.3 beta line (`v0.3.0-beta.1` … `v0.3.0-beta.4`) is published as Pre-release and is not counted as an official release; `v0.2.1` was published, not skipped. They are independent numbers, not the same number.
+> **Two version spaces** — the kernel version declared in `kernel_contract.json` is `0.10`; the repository tag is a separate numbering space. The latest non-prerelease Release is `v0.2.6`; the 0.3 beta line (`v0.3.0-beta.1` … `v0.3.0-beta.4`) is published as Pre-release and is not counted as an official release; `v0.2.1` was published, not skipped. They are independent numbers, not the same number.
 >
 > **Cold start** — to resume iteration, start from [`RETURN_HERE.md`](RETURN_HERE.md).
 
@@ -23,7 +23,7 @@ Stdlib-only rule-execution kernel for AI agents: one written rule set in, one de
 ## Quick start (30 seconds)
 
 ```bash
-git clone -b v0.12 https://github.com/Bumao-Ai/Bumao-core.git
+git clone -b v0.2.6 https://github.com/Bumao-Ai/Bumao-core.git
 cd Bumao-core
 python bumao_core/test_check_rc.py     # smoke test, prints PASS
 ```
@@ -77,12 +77,12 @@ Both loading styles work on the same file: `pip install -e .` + `from bumao_core
 
 | Item | Value | Source |
 |---|---|---|
-| Commits at `v0.2.2` | 18 | `git rev-list --count v0.2.2` |
+| Commits at `v0.2.6` | 33 | `git rev-list --count v0.2.6` |
 | Last commit | 2026-11-09 | `git log -1 --date=short` |
 | Check items | 13 gate templates | `bumao_core/bumao_core_gates.py` (`make_*_gate`) |
 | Shipped tests | `test_check_rc.py` · `test_build_parser.py` · `test_a10_policy.py` (7/7) · `test_gate_registry.py` | `python bumao_core/<test>.py` |
 | Defect ledger | not kept in this repo | — |
-| Releases | 11 tags, `v0.1` → `v0.2.2`, all 2026-11 | `git tag` |
+| Releases | 19 tags, `v0.1` → `v0.2.6`, all 2026-11 | `git tag` |
 | Changelog | [CHANGELOG.md](CHANGELOG.md) | — |
 
 ## 中文
@@ -195,7 +195,7 @@ Copyright 2026 Bumao
 ![gates](https://img.shields.io/badge/gate%20templates-13-brightgreen)
 ![runtime](https://img.shields.io/badge/runtime-stdlib%20only-informational)
 
-> **两个版本空间** — `kernel_contract.json` 声明的内核版本是 `0.10`；仓库 tag 是另一个编号空间。最新正式发布是 `v0.2.4`；0.3 的 beta 系列（`v0.3.0-beta.1` … `v0.3.0-beta.4`）为 Pre-release，不计入正式发布；`v0.2.1` 已发布，未跳过。两者是独立编号，不是同一个数字。
+> **两个版本空间** — `kernel_contract.json` 声明的内核版本是 `0.10`；仓库 tag 是另一个编号空间。最新正式发布是 `v0.2.6`；0.3 的 beta 系列（`v0.3.0-beta.1` … `v0.3.0-beta.4`）为 Pre-release，不计入正式发布；`v0.2.1` 已发布，未跳过。两者是独立编号，不是同一个数字。
 >
 > **冷启动** — 恢复迭代从 [`RETURN_HERE.md`](RETURN_HERE.md) 开始。
 
@@ -211,7 +211,7 @@ Copyright 2026 Bumao
 ## 快速开始（30 秒）
 
 ```bash
-git clone -b v0.12 https://github.com/Bumao-Ai/Bumao-core.git
+git clone -b v0.2.6 https://github.com/Bumao-Ai/Bumao-core.git
 cd Bumao-core
 python bumao_core/test_check_rc.py     # 冒烟测试，输出 PASS
 ```
@@ -265,12 +265,12 @@ python -c "from bumao_core import engine; print(engine.build_parser().prog)"
 
 | 项 | 实测值 | 取值来源 |
 |---|---|---|
-| `v0.2.2` 处的提交数 | 18 | `git rev-list --count v0.2.2` |
+| `v0.2.6` 处的提交数 | 33 | `git rev-list --count v0.2.6` |
 | 最近提交 | 2026-11-09 | `git log -1 --date=short` |
 | 检查项 | 13 个闸门模板 | `bumao_core/bumao_core_gates.py`（`make_*_gate`） |
 | 随包测试 | `test_check_rc.py` · `test_build_parser.py` · `test_a10_policy.py`（7/7） · `test_gate_registry.py` | `python bumao_core/<test>.py` |
 | 缺陷台账 | 本仓不设 | — |
-| 发布 | 11 个 tag，`v0.1` → `v0.2.2`，均为 2026-11 | `git tag` |
+| 发布 | 19 个 tag，`v0.1` → `v0.2.6`，均为 2026-11 | `git tag` |
 | 变更记录 | [CHANGELOG.md](CHANGELOG.md) | — |
 
 ## Roadmap（0.2 — 进行中）
