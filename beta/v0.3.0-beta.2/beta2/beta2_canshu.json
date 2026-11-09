@@ -1,0 +1,18 @@
+{
+  "_说明": "Bumao Core 0.3 beta2 最小骨架参数件。仅沙盒实验用，不参与任何已发布产品。",
+  "schema": "beta2/1",
+  "workspace": "workspace",
+  "run_dir": "run",
+  "agents": "run/agents.json",
+  "identity_map": "run/identity_map.json",
+  "nonces": "run/nonces.json",
+  "ledger": "run/actions.jsonl",
+  "chain_seed": "ACT-GENESIS-v0.3-beta2-261109",
+  "rule_set": "bumao-core/jiancha+adapter-beta2/1",
+  "core_jieru": "core_rules_jieru.json",
+  "core_run_dir": "run/core",
+  "core_chain_seed": "ACT-GENESIS-v0.3-beta2-core-261109",
+  "denied_zones": ["_frozen", "90_lishi", "00_meta", ".git"],
+  "nonce_ttl_sec": 300,
+  "approval_actions": []
+}
