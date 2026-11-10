@@ -1,6 +1,4 @@
 # Bumao Core
-[![XERJ Corpus Hub contributor](https://hub.xerj.org/contributors/Bumao-Ai/badge.svg)](https://hub.xerj.org/contributors/Bumao-Ai)
-
 Status: maintenance pause
 
 ![license](https://img.shields.io/badge/license-Apache--2.0-blue)
