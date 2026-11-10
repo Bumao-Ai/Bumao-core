@@ -5,6 +5,7 @@ Status: maintenance pause
 ![python](https://img.shields.io/badge/python-3.12%2B-blue)
 ![gates](https://img.shields.io/badge/gate%20templates-13-brightgreen)
 ![runtime](https://img.shields.io/badge/runtime-stdlib%20only-informational)
+[![XERJ Corpus Hub contributor](https://hub.xerj.org/contributors/Bumao-Ai/badge.svg)](https://hub.xerj.org/contributors/Bumao-Ai)
 
 > **Two version spaces** — the kernel version declared in `kernel_contract.json` is `0.10`; the repository tag is a separate numbering space. The latest non-prerelease Release is `v0.2.6`; the 0.3 beta line (`v0.3.0-beta.1` … `v0.3.0-beta.4`) is published as Pre-release and is not counted as an official release; `v0.2.1` was published, not skipped. They are independent numbers, not the same number.
 >
